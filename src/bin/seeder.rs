@@ -2,12 +2,10 @@ use radius_sequencer_sdk::{json_rpc::RpcServer, kvstore::KvStore as Database};
 use seeder::{
     cli::{Cli, Commands, Config, ConfigPath, DATABASE_DIR_NAME},
     error::Error,
-    rpc::*,
+    models::prelude::SequencingInfoModel,
+    rpc::methods::*,
+    sequencer_types::prelude::*,
     task::radius_liveness_event_listener,
-};
-use sequencer::{
-    models::SequencingInfoModel,
-    types::{PlatForm, ServiceType},
 };
 use tracing::info;
 
@@ -41,7 +39,7 @@ async fn main() -> Result<(), Error> {
                 }
             };
 
-            initialize_platform_listener(&sequencing_info_model);
+            initialize_event_listener(&sequencing_info_model);
 
             let rpc_server_handle = RpcServer::new(())
                 .register_rpc_method(AddSequencingInfo::METHOD_NAME, AddSequencingInfo::handler)?
@@ -66,7 +64,7 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-pub fn initialize_platform_listener(sequencing_info_model: &SequencingInfoModel) {
+pub fn initialize_event_listener(sequencing_info_model: &SequencingInfoModel) {
     sequencing_info_model.sequencing_infos().iter().for_each(
         |(sequencing_info_key, sequencing_info)| {
             info!(
@@ -82,7 +80,7 @@ pub fn initialize_platform_listener(sequencing_info_model: &SequencingInfoModel)
                     info!("Init local platform (TODO)");
                 }
                 PlatForm::Ethereum => match sequencing_info_key.sequencing_function_type() {
-                    sequencer::types::SequencingFunctionType::Liveness => {
+                    SequencingFunctionType::Liveness => {
                         match sequencing_info_key.service_type() {
                             ServiceType::Radius => {
                                 info!(
@@ -101,7 +99,7 @@ pub fn initialize_platform_listener(sequencing_info_model: &SequencingInfoModel)
                             }
                         }
                     }
-                    sequencer::types::SequencingFunctionType::Validation => {}
+                    SequencingFunctionType::Validation => {}
                 },
             }
         },

@@ -39,11 +39,11 @@ impl ConfigOption {
 
     pub fn merge(mut self, other: &ConfigOption) -> Self {
         if other.path.is_some() {
-            self.path = other.path.clone();
+            self.path.clone_from(&other.path)
         }
 
         if other.seeder_rpc_url.is_some() {
-            self.seeder_rpc_url = other.seeder_rpc_url.clone();
+            self.seeder_rpc_url.clone_from(&other.seeder_rpc_url)
         }
 
         self

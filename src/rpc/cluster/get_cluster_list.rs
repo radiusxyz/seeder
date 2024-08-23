@@ -1,10 +1,6 @@
-use radius_sequencer_sdk::kvstore::KvStoreError;
-use sequencer::{
-    models::{ClusterIdListModel, ClusterModel, LivenessClusterModel, ValidationClusterModel},
-    types::{PlatForm, SequencingFunctionType, ServiceType},
-};
+use std::sync::Arc;
 
-use crate::rpc::prelude::*;
+use crate::{models::prelude::*, rpc::prelude::*, sequencer_types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetClusterList {
@@ -54,7 +50,7 @@ impl GetClusterList {
                     }
                 })
             })
-            .collect::<Result<Vec<ClusterModel>, KvStoreError>>()?;
+            .collect::<Result<Vec<ClusterModel>, DbError>>()?;
 
         Ok(GetClusterListResponse { cluster_list })
     }

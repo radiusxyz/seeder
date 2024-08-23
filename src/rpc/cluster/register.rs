@@ -1,9 +1,12 @@
-use sequencer::{
-    models::{LivenessClusterModel, ValidationClusterModel},
-    types::{Address, ClusterId, PlatForm, SequencingFunctionType, ServiceType},
-};
+use std::sync::Arc;
 
-use crate::rpc::prelude::*;
+use radius_sequencer_sdk::json_rpc::{types::RpcParameter, RpcError};
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    models::prelude::{LivenessClusterModel, ValidationClusterModel},
+    sequencer_types::prelude::*,
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Register {

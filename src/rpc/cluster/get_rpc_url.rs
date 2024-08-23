@@ -1,7 +1,13 @@
-use sequencer::types::{Address, IpAddress};
+use std::sync::Arc;
+
+use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::{models::OperatorModel, rpc::prelude::*};
+use crate::{
+    models::prelude::OperatorModel,
+    rpc::prelude::*,
+    sequencer_types::prelude::{Address, IpAddress},
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetRpcUrl {

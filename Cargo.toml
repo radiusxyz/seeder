@@ -10,10 +10,10 @@ path = "src/bin/seeder.rs"
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
 futures = "0.3.30"
+num-bigint = { version = "0.4", features = ["rand", "serde"] }
 radius-sequencer-sdk = { git = "https://github.com/radiusxyz/radius-sdk-rs", rev="37b31eafb4d007ad9caff98ab2e64a4be556f1f4", features = ["full", "liveness-evm", "validation-eigenlayer"] }
 reqwest = { version = "0.12.4", features = ["json"] }
 serde = { version = "1.0.197", features = ["derive"] }
-sequencer = { git = "https://github.com/radiusxyz/sequencer", branch="feat/seeder" }
 tokio = { version = "1.37.0", features = ["full"] }
 toml = "0.8.13"
 tracing = "0.1.37"

@@ -1,4 +1,9 @@
-use crate::models::prelude::*;
+pub use serde::{Deserialize, Serialize};
+
+use crate::{
+    models::prelude::*,
+    sequencer_types::prelude::{Address, IpAddress},
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OperatorModel {

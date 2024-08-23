@@ -1,9 +1,12 @@
-use sequencer::{
-    models::SequencingInfoModel,
-    types::{Address, IpAddress, PlatForm, SequencingFunctionType, SequencingInfo, ServiceType},
-};
+use std::sync::Arc;
 
-use crate::{rpc::prelude::*, task::radius_liveness_event_listener};
+use prelude::*;
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    models::prelude::SequencingInfoModel, rpc::prelude::*, sequencer_types::*,
+    task::radius_liveness_event_listener,
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AddSequencingInfo {
@@ -40,19 +43,12 @@ impl AddSequencingInfo {
             parameter.contract_address,
         );
 
-        // TODO
-        if parameter.platform != PlatForm::Local {
-            if parameter.sequencing_function_type == SequencingFunctionType::Liveness {
-                match parameter.service_type {
-                    ServiceType::Radius => {
-                        radius_liveness_event_listener::init(sequencing_info.clone());
-                    }
-                    _ => {}
-                }
-            }
-
-            // TODO
-            if parameter.sequencing_function_type == SequencingFunctionType::Validation {}
+        // TODO: Add process logic other branch
+        if parameter.platform != PlatForm::Local
+            && parameter.sequencing_function_type == SequencingFunctionType::Liveness
+            && parameter.service_type == ServiceType::Radius
+        {
+            radius_liveness_event_listener::init(sequencing_info.clone());
         }
 
         SequencingInfoModel::add(sequencing_info)?;

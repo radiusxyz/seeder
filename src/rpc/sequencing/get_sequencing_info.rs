@@ -1,9 +1,13 @@
-use sequencer::{
-    models::SequencingInfoModel,
-    types::{SequencingInfo, SequencingInfoKey},
-};
+use std::sync::Arc;
 
-use crate::{error::Error, rpc::prelude::*};
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    error::Error,
+    models::prelude::SequencingInfoModel,
+    rpc::prelude::*,
+    sequencer_types::prelude::{SequencingInfo, SequencingInfoKey},
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfo {

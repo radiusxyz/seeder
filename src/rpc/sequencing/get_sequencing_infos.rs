@@ -1,8 +1,9 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
-use sequencer::{models::SequencingInfoModel, types::SequencingInfo};
+use radius_sequencer_sdk::json_rpc::{types::RpcParameter, RpcError};
+pub use serde::{Deserialize, Serialize};
 
-use crate::rpc::prelude::*;
+use crate::{models::prelude::SequencingInfoModel, sequencer_types::prelude::SequencingInfo};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfos {}

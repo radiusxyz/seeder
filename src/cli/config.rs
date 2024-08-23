@@ -25,7 +25,7 @@ impl Config {
         // Read config file
         let config_file_path = config_path.join(CONFIG_FILE_NAME);
         let config_string =
-            fs::read_to_string(&config_file_path).map_err(|_| Error::LoadConfigOption)?;
+            fs::read_to_string(config_file_path).map_err(|_| Error::LoadConfigOption)?;
 
         // Parse String to TOML String
         let config_file: ConfigOption =

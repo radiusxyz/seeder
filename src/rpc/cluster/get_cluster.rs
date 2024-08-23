@@ -1,9 +1,6 @@
-use sequencer::{
-    models::{ClusterModel, LivenessClusterModel, ValidationClusterModel},
-    types::{ClusterId, PlatForm, SequencingFunctionType, ServiceType},
-};
+use std::sync::Arc;
 
-use crate::rpc::prelude::*;
+use crate::{models::prelude::*, rpc::prelude::*, sequencer_types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetCluster {

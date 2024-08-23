@@ -1,6 +1,12 @@
-use sequencer::types::{Address, IpAddress};
+use std::sync::Arc;
 
-use crate::{models::OperatorModel, rpc::prelude::*};
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    models::prelude::OperatorModel,
+    rpc::prelude::{RpcError, RpcParameter},
+    sequencer_types::prelude::{Address, IpAddress},
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct RegisterRpcUrl {
@@ -30,15 +36,13 @@ impl RegisterRpcUrl {
             Ok(sequencer) => {
                 tracing::warn!("Already registered sequencer: {:?}", sequencer);
 
-                let sequencer =
-                    OperatorModel::new(parameter.address.into(), parameter.rpc_url.into());
+                let sequencer = OperatorModel::new(parameter.address, parameter.rpc_url.into());
 
                 sequencer.put()?;
             }
             Err(err) => {
                 if err.is_none_type() {
-                    let sequencer =
-                        OperatorModel::new(parameter.address.into(), parameter.rpc_url.into());
+                    let sequencer = OperatorModel::new(parameter.address, parameter.rpc_url.into());
 
                     sequencer.put()?;
                 } else {
