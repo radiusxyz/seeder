@@ -7,7 +7,6 @@ pub enum Error {
     Database(DbError),
     JsonRPC(radius_sequencer_sdk::json_rpc::Error),
     SignatureMismatch,
-    HealthCheck,
 
     RemoveConfigDirectory,
     CreateConfigDirectory,
@@ -18,7 +17,12 @@ pub enum Error {
 
     ParseContractAddress,
 
-    Publisher(radius_sequencer_sdk::liveness::publisher::PublisherError),
+    UnRegistered,
+    Deregistered,
+    SequencerRpcUrlIsNone,
+
+    HealthCheck(reqwest::Error),
+    InitializePublisher(radius_sequencer_sdk::liveness::publisher::PublisherError),
 }
 
 impl std::fmt::Debug for Error {
@@ -36,10 +40,10 @@ impl std::fmt::Display for Error {
             Self::Database(error) => write!(f, "{}", error),
             Self::JsonRPC(error) => write!(f, "{}", error),
             Self::SignatureMismatch => write!(f, "Sender is not the signer."),
-            Self::HealthCheck => {
+            Self::HealthCheck(error) => {
                 write!(
                     f,
-                    "Health-check failed. Make sure the sequencer is running and port-forwarded."
+                    "Health-check failed. Make sure the sequencer is running and port-forwarded. {:?}", error
                 )
             }
             Self::RemoveConfigDirectory => {
@@ -63,7 +67,18 @@ impl std::fmt::Display for Error {
             Self::ParseContractAddress => {
                 write!(f, "Failed to parse contract address")
             }
-            Self::Publisher(error) => write!(f, "{}", error),
+            Self::UnRegistered => {
+                write!(f, "Unregistered sequencer")
+            }
+            Self::Deregistered => {
+                write!(f, "Already deregistered sequencer")
+            }
+            Self::SequencerRpcUrlIsNone => {
+                write!(f, "Sequencer rpc url is None")
+            }
+            Self::InitializePublisher(error) => {
+                write!(f, "Failed to initialize publisher: {:?}", error)
+            }
         }
     }
 }

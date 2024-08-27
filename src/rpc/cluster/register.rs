@@ -7,17 +7,12 @@ use radius_sequencer_sdk::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    models::prelude::{LivenessClusterModel, SequencerModel, ValidationClusterModel},
-    sequencer_types::prelude::*,
-};
+use crate::{error::Error, models::prelude::SequencerModel, sequencer_types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct RegisterMessage {
     address: Vec<u8>,
     chain_type: ChainType,
-    sequencing_function_type: SequencingFunctionType,
-    service_type: ServiceType,
     cluster_id: ClusterId,
     rpc_url: IpAddress,
 }
@@ -34,18 +29,10 @@ pub struct Register {
     message: RegisterMessage,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct RegisterResponse {
-    pub success: bool,
-}
-
 impl Register {
     pub const METHOD_NAME: &'static str = "register";
 
-    pub async fn handler(
-        parameter: RpcParameter,
-        context: Arc<Publisher>,
-    ) -> Result<RegisterResponse, RpcError> {
+    pub async fn handler(parameter: RpcParameter, context: Arc<Publisher>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Register>()?;
 
         // verify siganture
@@ -55,48 +42,20 @@ impl Register {
             parameter.message.chain_type,
         )?;
 
-        // TODO: 20byte array -> Bytes array
-        if !context
-            .is_registered(parameter.message.cluster_id.clone())
-            .await?
-        {
-            tracing::error!("Not registered on the Liveness contract. Skipping the registration..");
+        let block_number = context.get_block_number().await?;
+        let sequencer_list = context
+            .get_sequencer_list(&parameter.message.cluster_id, block_number)
+            .await?;
 
-            return Ok(RegisterResponse { success: false });
-        }
-
-        let platform = match parameter.message.chain_type {
-            ChainType::Ethereum => PlatForm::Ethereum,
-            _ => PlatForm::Local,
-        };
+        // check if the sequencer is registered
+        sequencer_list
+            .iter()
+            .find(|&address| address.as_slice() == parameter.message.address)
+            .ok_or(Error::UnRegistered)?;
 
         let address = Address::from(hex::encode(&parameter.message.address));
 
-        match parameter.message.sequencing_function_type {
-            SequencingFunctionType::Liveness => {
-                let mut liveness_cluster_model = LivenessClusterModel::get_mut(
-                    &platform,
-                    &parameter.message.service_type,
-                    &parameter.message.cluster_id,
-                )?;
-
-                liveness_cluster_model.add_seqeuncer(address.clone());
-                liveness_cluster_model.update()?;
-            }
-
-            SequencingFunctionType::Validation => {
-                let mut validation_cluster_model = ValidationClusterModel::get_mut(
-                    &platform,
-                    &parameter.message.service_type,
-                    &parameter.message.cluster_id,
-                )?;
-
-                validation_cluster_model.add_seqeuncer(address.clone());
-                validation_cluster_model.update()?;
-            }
-        }
-
-        match SequencerModel::get(Address::from(hex::encode(&parameter.message.address))) {
+        match SequencerModel::get(&Address::from(hex::encode(&parameter.message.address))) {
             // TODO: change(tmp logic when already registered)
             Ok(sequencer) => {
                 tracing::warn!("Already registered sequencer: {:?}", sequencer);
@@ -117,6 +76,6 @@ impl Register {
             }
         };
 
-        Ok(RegisterResponse { success: true })
+        Ok(())
     }
 }

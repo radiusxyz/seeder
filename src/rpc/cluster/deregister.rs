@@ -7,17 +7,12 @@ use radius_sequencer_sdk::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    models::prelude::{LivenessClusterModel, SequencerModel, ValidationClusterModel},
-    sequencer_types::prelude::*,
-};
+use crate::{error::Error, models::prelude::SequencerModel, sequencer_types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct DeregisterMessage {
     address: Vec<u8>,
     chain_type: ChainType,
-    sequencing_function_type: SequencingFunctionType,
-    service_type: ServiceType,
     cluster_id: ClusterId,
 }
 
@@ -33,18 +28,10 @@ pub struct Deregister {
     message: DeregisterMessage,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct DeregisterResponse {
-    pub success: bool,
-}
-
 impl Deregister {
     pub const METHOD_NAME: &'static str = "deregister";
 
-    pub async fn handler(
-        parameter: RpcParameter,
-        context: Arc<Publisher>,
-    ) -> Result<DeregisterResponse, RpcError> {
+    pub async fn handler(parameter: RpcParameter, context: Arc<Publisher>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Deregister>()?;
 
         // verify siganture
@@ -54,52 +41,19 @@ impl Deregister {
             parameter.message.chain_type,
         )?;
 
-        if context
-            .is_registered(parameter.message.cluster_id.clone())
-            .await?
-        {
-            tracing::error!(
-                "Not deregistered on the Liveness contract. Skipping the deregistration.."
-            );
+        let block_number = context.get_block_number().await?;
+        let sequencer_list = context
+            .get_sequencer_list(&parameter.message.cluster_id, block_number)
+            .await?;
 
-            // Todo: change return error
-            return Ok(DeregisterResponse { success: false });
-        }
-
-        let address = Address::from(hex::encode(&parameter.message.address));
-
-        let platform = match parameter.message.chain_type {
-            ChainType::Ethereum => PlatForm::Ethereum,
-            _ => PlatForm::Local,
-        };
-
-        // remove liveness cluster
-        match parameter.message.sequencing_function_type {
-            SequencingFunctionType::Liveness => {
-                let mut liveness_cluster_model = LivenessClusterModel::get_mut(
-                    &platform,
-                    &parameter.message.service_type,
-                    &parameter.message.cluster_id,
-                )?;
-
-                liveness_cluster_model.remove_sequencer(&address);
-                liveness_cluster_model.update()?;
-            }
-
-            SequencingFunctionType::Validation => {
-                let mut validation_cluster_model = ValidationClusterModel::get_mut(
-                    &platform,
-                    &parameter.message.service_type,
-                    &parameter.message.cluster_id,
-                )?;
-
-                validation_cluster_model.remove_validator(&address);
-                validation_cluster_model.update()?;
-            }
-        }
+        // check if the sequencer is registered
+        sequencer_list
+            .iter()
+            .find(|&address| address.as_slice() == parameter.message.address)
+            .ok_or(Error::Deregistered)?;
 
         // remove operator model
-        match SequencerModel::get_mut(Address::from(hex::encode(&parameter.message.address))) {
+        match SequencerModel::get_mut(&Address::from(hex::encode(&parameter.message.address))) {
             Ok(sequencer) => {
                 sequencer.delete()?;
                 sequencer.update()?;
@@ -107,13 +61,13 @@ impl Deregister {
             Err(err) => {
                 if err.is_none_type() {
                     tracing::warn!("Already deregistered sequencer");
-                    return Ok(DeregisterResponse { success: false });
+                    return Ok(());
                 } else {
                     return Err(err.into());
                 }
             }
         }
 
-        Ok(DeregisterResponse { success: true })
+        Ok(())
     }
 }

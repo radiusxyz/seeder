@@ -19,12 +19,12 @@ impl SequencerModel {
 impl SequencerModel {
     pub const ID: &'static str = stringify!(OperatorModel);
 
-    pub fn get(address: Address) -> Result<Self, DbError> {
+    pub fn get(address: &Address) -> Result<Self, DbError> {
         let key = (Self::ID, address);
         database()?.get(&key)
     }
 
-    pub fn get_mut(address: Address) -> Result<Lock<'static, Self>, DbError> {
+    pub fn get_mut(address: &Address) -> Result<Lock<'static, Self>, DbError> {
         let key = (Self::ID, address);
         database()?.get_mut(&key)
     }

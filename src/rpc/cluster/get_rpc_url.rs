@@ -56,25 +56,18 @@ impl GetRpcUrl {
             parameter.message.chain_type,
         )?;
 
-        if !context
-            .is_registered(parameter.message.cluster_id.clone())
-            .await?
-        {
-            tracing::error!("Not registered on the Liveness contract.");
+        let block_number = context.get_block_number().await?;
+        let sequencer_list = context
+            .get_sequencer_list(&parameter.message.cluster_id, block_number)
+            .await?;
 
-            // return Err(Error::Publisher(
-            //     radius_sequencer_sdk::liveness::publisher::PublisherError::IsRegistered(
-            //         alloy_contract::error::Error::UnknownFunction(
-            //             "Not registered on the Liveness contract.".to_string(),
-            //         ),
-            //     ),
-            // )
-            // .into());
-        }
+        sequencer_list
+            .iter()
+            .find(|&address| address.as_slice() == parameter.message.address)
+            .ok_or(Error::UnRegistered)?;
 
         let address = Address::from(hex::encode(&parameter.message.address));
-
-        let sequencer_model = SequencerModel::get(address)?;
+        let sequencer_model = SequencerModel::get(&address)?;
 
         Ok(GetRpcUrlResponse {
             rpc_url: sequencer_model.rpc_url,
