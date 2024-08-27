@@ -19,7 +19,6 @@ pub enum Error {
 
     UnRegistered,
     Deregistered,
-    SequencerRpcUrlIsNone,
 
     HealthCheck(reqwest::Error),
     InitializePublisher(radius_sequencer_sdk::liveness::publisher::PublisherError),
@@ -72,9 +71,6 @@ impl std::fmt::Display for Error {
             }
             Self::Deregistered => {
                 write!(f, "Already deregistered sequencer")
-            }
-            Self::SequencerRpcUrlIsNone => {
-                write!(f, "Sequencer rpc url is None")
             }
             Self::InitializePublisher(error) => {
                 write!(f, "Failed to initialize publisher: {:?}", error)

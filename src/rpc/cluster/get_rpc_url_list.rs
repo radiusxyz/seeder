@@ -6,7 +6,7 @@ use radius_sequencer_sdk::{
 };
 use tracing::info;
 
-use crate::{error::Error, models::prelude::*, rpc::prelude::*, sequencer_types::prelude::*};
+use crate::{models::prelude::*, rpc::prelude::*, sequencer_types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetRpcUrlListMessage {
@@ -51,17 +51,16 @@ impl GetRpcUrlList {
             parameter.message.chain_type,
         )?;
 
-        let sequencer_list = parameter.message.sequencer_address_list;
-
-        let rpc_url_list = sequencer_list
+        let rpc_url_list = parameter
+            .message
+            .sequencer_address_list
             .into_iter()
-            .map(|address| {
-                SequencerModel::get(&address)?
-                    .rpc_url
-                    .map(|rpc_url| Ok::<_, Error>((address, rpc_url))) // Add type annotations for Ok variant
-                    .ok_or(Error::SequencerRpcUrlIsNone)?
+            .filter_map(|address| {
+                SequencerModel::get(&address)
+                    .ok()
+                    .and_then(|sequencer| sequencer.rpc_url.map(|rpc_url| (address, rpc_url)))
             })
-            .collect::<Result<Vec<_>, _>>()?;
+            .collect();
 
         Ok(GetRpcUrlListResponse { rpc_url_list })
     }
