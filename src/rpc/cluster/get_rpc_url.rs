@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use radius_sequencer_sdk::{
-    liveness::{publisher::Publisher, types::hex},
+    liveness::publisher::Publisher,
     signature::{ChainType, Signature},
 };
 use serde::{Deserialize, Serialize};
@@ -11,7 +11,7 @@ use crate::{
     error::Error,
     models::prelude::SequencerModel,
     rpc::prelude::*,
-    sequencer_types::prelude::{Address, ClusterId, IpAddress},
+    sequencer_types::prelude::{ClusterId, IpAddress},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -66,8 +66,7 @@ impl GetRpcUrl {
             .find(|&address| address.as_slice() == parameter.message.address)
             .ok_or(Error::UnRegistered)?;
 
-        let address = Address::from(hex::encode(&parameter.message.address));
-        let sequencer_model = SequencerModel::get(&address)?;
+        let sequencer_model = SequencerModel::get(&parameter.message.address)?;
 
         Ok(GetRpcUrlResponse {
             rpc_url: sequencer_model.rpc_url,

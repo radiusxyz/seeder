@@ -2,7 +2,7 @@ use std::{fmt::Formatter, sync::Arc};
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
-    liveness::{publisher::Publisher, types::hex},
+    liveness::publisher::Publisher,
     signature::{ChainType, Signature},
 };
 use serde::{Deserialize, Serialize};
@@ -53,20 +53,24 @@ impl Register {
             .find(|&address| address.as_slice() == parameter.message.address)
             .ok_or(Error::UnRegistered)?;
 
-        let address = Address::from(hex::encode(&parameter.message.address));
-
-        match SequencerModel::get(&Address::from(hex::encode(&parameter.message.address))) {
+        match SequencerModel::get(&parameter.message.address) {
             // TODO: change(tmp logic when already registered)
             Ok(sequencer) => {
                 tracing::warn!("Already registered sequencer: {:?}", sequencer);
 
-                let sequencer = SequencerModel::new(address, parameter.message.rpc_url.into());
+                let sequencer = SequencerModel::new(
+                    parameter.message.address,
+                    parameter.message.rpc_url.into(),
+                );
 
                 sequencer.put()?;
             }
             Err(err) => {
                 if err.is_none_type() {
-                    let sequencer = SequencerModel::new(address, parameter.message.rpc_url.into());
+                    let sequencer = SequencerModel::new(
+                        parameter.message.address,
+                        parameter.message.rpc_url.into(),
+                    );
 
                     sequencer.put()?;
                 } else {

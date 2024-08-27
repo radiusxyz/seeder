@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use radius_sequencer_sdk::{
-    liveness::{publisher::Publisher, types::hex},
+    liveness::publisher::Publisher,
     signature::{ChainType, Signature},
 };
 use tracing::info;
@@ -30,7 +30,7 @@ pub struct GetRpcUrlListForRollup {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetRpcUrlListForRollupResponse {
-    pub rpc_url_list: Vec<(Address, IpAddress)>,
+    pub rpc_url_list: Vec<(Vec<u8>, IpAddress)>,
     pub block_height: u64,
 }
 
@@ -65,7 +65,7 @@ impl GetRpcUrlListForRollup {
         let rpc_url_list = sequencer_list
             .into_iter()
             .filter_map(|address| {
-                let address = Address::from(hex::encode(address));
+                let address = address.to_vec();
                 SequencerModel::get(&address)
                     .ok()
                     .and_then(|sequencer_model| {

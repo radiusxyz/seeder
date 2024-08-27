@@ -13,7 +13,7 @@ struct GetRpcUrlListMessage {
     address: Vec<u8>,
     chain_type: ChainType,
     cluster_id: ClusterId,
-    sequencer_address_list: Vec<Address>,
+    sequencer_address_list: Vec<Vec<u8>>,
 }
 
 impl std::fmt::Display for GetRpcUrlListMessage {
@@ -30,7 +30,7 @@ pub struct GetRpcUrlList {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetRpcUrlListResponse {
-    pub rpc_url_list: Vec<(Address, IpAddress)>,
+    pub rpc_url_list: Vec<(Vec<u8>, IpAddress)>,
 }
 
 impl GetRpcUrlList {

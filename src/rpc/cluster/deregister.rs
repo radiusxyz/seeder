@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
-    liveness::{publisher::Publisher, types::hex},
+    liveness::publisher::Publisher,
     signature::{ChainType, Signature},
 };
 use serde::{Deserialize, Serialize};
@@ -53,7 +53,7 @@ impl Deregister {
             .ok_or(Error::Deregistered)?;
 
         // remove operator model
-        match SequencerModel::get_mut(&Address::from(hex::encode(&parameter.message.address))) {
+        match SequencerModel::get_mut(&parameter.message.address) {
             Ok(sequencer) => {
                 sequencer.delete()?;
                 sequencer.update()?;
