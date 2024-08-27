@@ -11,7 +11,7 @@ path = "src/bin/seeder.rs"
 clap = { version = "4.4.7", features = ["derive"] }
 futures = "0.3.30"
 num-bigint = { version = "0.4", features = ["rand", "serde"] }
-radius-sequencer-sdk = { git = "https://github.com/radiusxyz/radius-sdk-rs", rev="37b31eafb4d007ad9caff98ab2e64a4be556f1f4", features = ["full", "liveness-evm", "validation-eigenlayer"] }
+radius-sequencer-sdk = { git = "https://github.com/radiusxyz/radius-sdk-rs", rev="6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8", features = ["full", "liveness-evm", "validation-eigenlayer", "signature"] }
 reqwest = { version = "0.12.4", features = ["json"] }
 serde = { version = "1.0.197", features = ["derive"] }
 tokio = { version = "1.37.0", features = ["full"] }

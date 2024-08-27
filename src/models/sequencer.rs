@@ -6,17 +6,17 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct OperatorModel {
+pub struct SequencerModel {
     pub address: Address,
     pub rpc_url: Option<IpAddress>,
 }
 
-impl OperatorModel {
+impl SequencerModel {
     pub fn new(address: Address, rpc_url: Option<IpAddress>) -> Self {
         Self { address, rpc_url }
     }
 }
-impl OperatorModel {
+impl SequencerModel {
     pub const ID: &'static str = stringify!(OperatorModel);
 
     pub fn get(address: Address) -> Result<Self, DbError> {
@@ -32,5 +32,10 @@ impl OperatorModel {
     pub fn put(&self) -> Result<(), DbError> {
         let key = (Self::ID, self.address.clone());
         database()?.put(&key, self)
+    }
+
+    pub fn delete(&self) -> Result<(), DbError> {
+        let key = (Self::ID, self.address.clone());
+        database()?.delete(&key)
     }
 }

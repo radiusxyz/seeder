@@ -17,15 +17,15 @@ impl ClusterIdListModel {
     }
 
     pub fn add_cluster_id(&mut self, cluster_id: ClusterId) {
-        let is_exist_cluster_id = self.cluster_id_list.contains(&cluster_id);
+        let is_exist_cluster_id = self.cluster_id_list.as_ref().contains(&cluster_id);
 
         if !is_exist_cluster_id {
-            self.cluster_id_list.push(cluster_id);
+            self.cluster_id_list.as_mut().push(cluster_id);
         }
     }
 
     pub fn is_added_cluster_id(&self, cluster_id: &ClusterId) -> bool {
-        self.cluster_id_list.contains(cluster_id)
+        self.cluster_id_list.as_ref().contains(cluster_id)
     }
 }
 

@@ -16,10 +16,9 @@ pub enum Error {
     LoadConfigOption,
     ParseTomlString,
 
-    ConnectEventListener,
     ParseContractAddress,
 
-    GetSequencingInfo,
+    Publisher(radius_sequencer_sdk::liveness::publisher::PublisherError),
 }
 
 impl std::fmt::Debug for Error {
@@ -61,15 +60,10 @@ impl std::fmt::Display for Error {
             Self::ParseTomlString => {
                 write!(f, "Failed to parse String to TOML String")
             }
-            Self::ConnectEventListener => {
-                write!(f, "Failed to connect to the event listener")
-            }
             Self::ParseContractAddress => {
                 write!(f, "Failed to parse contract address")
             }
-            Self::GetSequencingInfo => {
-                write!(f, "Failed to get sequencing info")
-            }
+            Self::Publisher(error) => write!(f, "{}", error),
         }
     }
 }

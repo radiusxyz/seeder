@@ -9,41 +9,46 @@ use tracing::info;
 use crate::{error::Error, models::prelude::*, rpc::prelude::*, sequencer_types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct GetRpcUrlListMessage {
+struct GetRpcUrlListForRollupMessage {
     address: Vec<u8>,
     chain_type: ChainType,
     sequencing_function_type: SequencingFunctionType,
     service_type: ServiceType,
     cluster_id: ClusterId,
+    block_height: u64,
 }
 
-impl std::fmt::Display for GetRpcUrlListMessage {
+impl std::fmt::Display for GetRpcUrlListForRollupMessage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetRpcUrlList {
+pub struct GetRpcUrlListForRollup {
     signature: Signature,
-    message: GetRpcUrlListMessage,
+    message: GetRpcUrlListForRollupMessage,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetRpcUrlListResponse {
+pub struct GetRpcUrlListForRollupResponse {
     pub rpc_url_list: Vec<(Address, IpAddress)>,
+    pub block_height: u64,
 }
 
-impl GetRpcUrlList {
-    pub const METHOD_NAME: &'static str = "get_rpc_url_list";
+impl GetRpcUrlListForRollup {
+    pub const METHOD_NAME: &'static str = "get_rpc_url_list_for_rollup";
 
     pub async fn handler(
         parameter: RpcParameter,
         context: Arc<Publisher>,
-    ) -> Result<GetRpcUrlListResponse, RpcError> {
-        let parameter = parameter.parse::<GetRpcUrlList>()?;
+    ) -> Result<GetRpcUrlListForRollupResponse, RpcError> {
+        let parameter = parameter.parse::<GetRpcUrlListForRollup>()?;
 
-        info!("get_rpc_url_list: {:?}", parameter.message.cluster_id);
+        info!(
+            "get_rpc_url_list_for_rollup: {:?}",
+            parameter.message.cluster_id
+        );
 
         // verify siganture
         parameter.signature.verify_signature(
@@ -60,16 +65,19 @@ impl GetRpcUrlList {
 
             // return Err(Error::Publisher(
             //     radius_sequencer_sdk::liveness::publisher::PublisherError::IsRegistered(
-            //         "Not registered on the Liveness contract.".to_string(),
+            //         alloy_contract::error::Error::UnknownFunction(
+            //             "Not registered on the Liveness contract.".to_string(),
+            //         ),
             //     ),
             // )
             // .into());
         }
 
-        let block_height = context.get_block_number().await?;
-
         let sequencer_list = context
-            .get_sequencer_list(parameter.message.cluster_id.clone(), block_height)
+            .get_sequencer_list(
+                parameter.message.cluster_id.clone(),
+                parameter.message.block_height,
+            )
             .await?;
 
         let platform = match parameter.message.chain_type {
@@ -118,6 +126,9 @@ impl GetRpcUrlList {
             })
             .collect();
 
-        Ok(GetRpcUrlListResponse { rpc_url_list })
+        Ok(GetRpcUrlListForRollupResponse {
+            rpc_url_list,
+            block_height: parameter.message.block_height,
+        })
     }
 }

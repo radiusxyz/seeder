@@ -8,8 +8,38 @@ use tokio::sync::Mutex;
 use crate::sequencer_types::prelude::*;
 
 pub type SequencerIndex = usize;
-pub type ClusterId = String;
-pub type ClusterIdList = Vec<ClusterId>;
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct ClusterId(String);
+
+impl std::fmt::Display for ClusterId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl AsRef<str> for ClusterId {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+// pub type ClusterIdList = Vec<ClusterId>;
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Default)]
+pub struct ClusterIdList(Vec<ClusterId>);
+
+impl AsRef<Vec<ClusterId>> for ClusterIdList {
+    fn as_ref(&self) -> &Vec<ClusterId> {
+        &self.0
+    }
+}
+
+impl AsMut<Vec<ClusterId>> for ClusterIdList {
+    fn as_mut(&mut self) -> &mut Vec<ClusterId> {
+        &mut self.0
+    }
+}
 
 pub struct SequencerClient(Arc<RpcClient>);
 
@@ -155,12 +185,12 @@ impl Cluster {
             .collect()
     }
 
-    pub async fn is_leader(&self, rollup_block_height: BlockHeight) -> bool {
+    pub async fn is_leader(&self, rollup_block_height: u64) -> bool {
         let sequencer_rpc_client_list_context = self.inner.sequencer_rpc_client_list.load();
 
         let sequencer_rpc_client_list = sequencer_rpc_client_list_context.as_ref();
-        let leader_index = (rollup_block_height % sequencer_rpc_client_list.len() as BlockHeight)
-            as SequencerIndex;
+        let leader_index =
+            (rollup_block_height % sequencer_rpc_client_list.len() as u64) as SequencerIndex;
 
         sequencer_rpc_client_list
             .get(leader_index)
@@ -168,12 +198,12 @@ impl Cluster {
             .unwrap_or(false)
     }
 
-    pub async fn get_leader_rpc_client(&self, rollup_block_height: BlockHeight) -> SequencerClient {
+    pub async fn get_leader_rpc_client(&self, rollup_block_height: u64) -> SequencerClient {
         let sequencer_rpc_client_list_context = self.inner.sequencer_rpc_client_list.load();
 
         let sequencer_rpc_client_list = sequencer_rpc_client_list_context.as_ref();
-        let leader_index = (rollup_block_height % sequencer_rpc_client_list.len() as BlockHeight)
-            as SequencerIndex;
+        let leader_index =
+            (rollup_block_height % sequencer_rpc_client_list.len() as u64) as SequencerIndex;
 
         println!("jaemin - leader_index: {:?}", leader_index);
 
@@ -185,13 +215,13 @@ impl Cluster {
 
     pub async fn get_follower_rpc_client_list(
         &self,
-        rollup_block_height: BlockHeight,
+        rollup_block_height: u64,
     ) -> Vec<SequencerClient> {
         let sequencer_rpc_client_list_context = self.inner.sequencer_rpc_client_list.load();
 
         let sequencer_rpc_client_list = sequencer_rpc_client_list_context.as_ref();
-        let leader_index = (rollup_block_height % sequencer_rpc_client_list.len() as BlockHeight)
-            as SequencerIndex;
+        let leader_index =
+            (rollup_block_height % sequencer_rpc_client_list.len() as u64) as SequencerIndex;
 
         sequencer_rpc_client_list
             .iter()

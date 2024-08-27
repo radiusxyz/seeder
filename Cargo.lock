@@ -1136,7 +1136,7 @@ dependencies = [
 [[package]]
 name = "block-commitment"
 version = "0.1.0"
-source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=37b31eafb4d007ad9caff98ab2e64a4be556f1f4#37b31eafb4d007ad9caff98ab2e64a4be556f1f4"
+source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8#6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8"
 dependencies = [
  "ark-bls12-377",
  "ark-bls12-381",
@@ -1332,7 +1332,7 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 [[package]]
 name = "context"
 version = "0.1.0"
-source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=37b31eafb4d007ad9caff98ab2e64a4be556f1f4#37b31eafb4d007ad9caff98ab2e64a4be556f1f4"
+source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8#6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8"
 dependencies = [
  "crossbeam-epoch",
 ]
@@ -1419,6 +1419,33 @@ checksum = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3"
 dependencies = [
  "generic-array",
  "typenum",
+]
+
+[[package]]
+name = "curve25519-dalek"
+version = "4.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97fb8b7c4503de7d6ae7b42ab72a5a59857b4c937ec27a3d4539dba95b5ab2be"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "curve25519-dalek-derive",
+ "digest 0.10.7",
+ "fiat-crypto",
+ "rustc_version 0.4.0",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "curve25519-dalek-derive"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f46882e17999c6cc590af592290432be3bce0428cb0d5f8b6715e4dc7b383eb3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.75",
 ]
 
 [[package]]
@@ -1526,8 +1553,32 @@ dependencies = [
  "digest 0.10.7",
  "elliptic-curve",
  "rfc6979",
- "signature",
+ "signature 2.2.0",
  "spki",
+]
+
+[[package]]
+name = "ed25519"
+version = "2.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "115531babc129696a58c64a4fef0a8bf9e9698629fb97e9e40767d235cfbcd53"
+dependencies = [
+ "pkcs8",
+ "signature 2.2.0",
+]
+
+[[package]]
+name = "ed25519-dalek"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a3daa8e81a3963a60642bcc1f90a670680bd4a77535faa384e9d1c79d620871"
+dependencies = [
+ "curve25519-dalek",
+ "ed25519",
+ "serde",
+ "sha2",
+ "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -1606,6 +1657,12 @@ dependencies = [
  "rand_core",
  "subtle",
 ]
+
+[[package]]
+name = "fiat-crypto"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 
 [[package]]
 name = "fixed-hash"
@@ -2283,7 +2340,7 @@ dependencies = [
 [[package]]
 name = "json-rpc"
 version = "0.1.0"
-source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=37b31eafb4d007ad9caff98ab2e64a4be556f1f4#37b31eafb4d007ad9caff98ab2e64a4be556f1f4"
+source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8#6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8"
 dependencies = [
  "hyper 0.14.30",
  "jsonrpsee",
@@ -2483,6 +2540,16 @@ dependencies = [
  "elliptic-curve",
  "once_cell",
  "sha2",
+ "signature 2.2.0",
+]
+
+[[package]]
+name = "keccak"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ecc2af9a1119c51f12a14607e783cb977bde58bc069ff0c3da1095e635d70654"
+dependencies = [
+ "cpufeatures",
 ]
 
 [[package]]
@@ -2498,7 +2565,7 @@ dependencies = [
 [[package]]
 name = "kvstore"
 version = "0.1.0"
-source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=37b31eafb4d007ad9caff98ab2e64a4be556f1f4#37b31eafb4d007ad9caff98ab2e64a4be556f1f4"
+source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8#6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8"
 dependencies = [
  "bincode",
  "rocksdb",
@@ -2575,7 +2642,7 @@ checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
 [[package]]
 name = "liveness-evm"
 version = "0.1.0"
-source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=37b31eafb4d007ad9caff98ab2e64a4be556f1f4#37b31eafb4d007ad9caff98ab2e64a4be556f1f4"
+source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8#6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8"
 dependencies = [
  "alloy",
  "futures",
@@ -3083,13 +3150,14 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 [[package]]
 name = "radius-sequencer-sdk"
 version = "0.1.0"
-source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=37b31eafb4d007ad9caff98ab2e64a4be556f1f4#37b31eafb4d007ad9caff98ab2e64a4be556f1f4"
+source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8#6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8"
 dependencies = [
  "block-commitment",
  "context",
  "json-rpc",
  "kvstore",
  "liveness-evm",
+ "signature 0.1.0",
  "validation-eigenlayer",
 ]
 
@@ -3707,6 +3775,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha3"
+version = "0.10.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75872d278a8f37ef87fa0ddbda7802605cb18344497949862c0d4dcb291eba60"
+dependencies = [
+ "digest 0.10.7",
+ "keccak",
+]
+
+[[package]]
 name = "sha3-asm"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3738,6 +3816,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9e9e0b4211b72e7b8b6e85c807d36c212bdb33ea8587f7569562a84df5465b1"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "signature"
+version = "0.1.0"
+source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8#6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8"
+dependencies = [
+ "const-hex",
+ "ed25519-dalek",
+ "itoa",
+ "k256",
+ "rand_core",
+ "serde",
+ "sha3",
 ]
 
 [[package]]
@@ -4416,7 +4508,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "validation-eigenlayer"
 version = "0.1.0"
-source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=37b31eafb4d007ad9caff98ab2e64a4be556f1f4#37b31eafb4d007ad9caff98ab2e64a4be556f1f4"
+source = "git+https://github.com/radiusxyz/radius-sdk-rs?rev=6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8#6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8"
 dependencies = [
  "alloy",
  "chrono",
