@@ -29,12 +29,12 @@ impl SequencerModel {
     }
 
     pub fn put(&self) -> Result<(), DbError> {
-        let key = (Self::ID, self.address.clone());
+        let key = (Self::ID, self.address);
         database()?.put(&key, self)
     }
 
     pub fn delete(&self) -> Result<(), DbError> {
-        let key = (Self::ID, self.address.clone());
+        let key = (Self::ID, self.address);
         database()?.delete(&key)
     }
 }
