@@ -1,27 +1,29 @@
+use radius_sequencer_sdk::liveness::types::Address;
 pub use serde::{Deserialize, Serialize};
 
 use crate::{models::prelude::*, sequencer_types::prelude::IpAddress};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SequencerModel {
-    pub address: Vec<u8>,
+    pub address: Address,
     pub rpc_url: Option<IpAddress>,
 }
 
 impl SequencerModel {
-    pub fn new(address: Vec<u8>, rpc_url: Option<IpAddress>) -> Self {
+    pub fn new(address: Address, rpc_url: Option<IpAddress>) -> Self {
         Self { address, rpc_url }
     }
 }
+
 impl SequencerModel {
     pub const ID: &'static str = stringify!(OperatorModel);
 
-    pub fn get(address: &Vec<u8>) -> Result<Self, DbError> {
+    pub fn get(address: &Address) -> Result<Self, DbError> {
         let key = (Self::ID, address);
         database()?.get(&key)
     }
 
-    pub fn get_mut(address: &Vec<u8>) -> Result<Lock<'static, Self>, DbError> {
+    pub fn get_mut(address: &Address) -> Result<Lock<'static, Self>, DbError> {
         let key = (Self::ID, address);
         database()?.get_mut(&key)
     }

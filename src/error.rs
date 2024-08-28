@@ -20,7 +20,9 @@ pub enum Error {
     UnRegistered,
     Deregistered,
 
-    HealthCheck(reqwest::Error),
+    InvalidURL(reqwest::Error),
+    PortConnection(reqwest::Error),
+
     InitializePublisher(radius_sequencer_sdk::liveness::publisher::PublisherError),
 }
 
@@ -39,11 +41,11 @@ impl std::fmt::Display for Error {
             Self::Database(error) => write!(f, "{}", error),
             Self::JsonRPC(error) => write!(f, "{}", error),
             Self::SignatureMismatch => write!(f, "Sender is not the signer."),
-            Self::HealthCheck(error) => {
-                write!(
-                    f,
-                    "Health-check failed. Make sure the sequencer is running and port-forwarded. {:?}", error
-                )
+            Self::InvalidURL(error) => {
+                write!(f, "Health-check failed. The URL is invalid: {}", error,)
+            }
+            Self::PortConnection(error) => {
+                write!(f, "Health-check failed. Make sure the sequencer is running and port-forwarded: {}", error)
             }
             Self::RemoveConfigDirectory => {
                 write!(f, "Failed to remove the previous configuration directory")

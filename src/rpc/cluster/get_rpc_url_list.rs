@@ -1,25 +1,23 @@
 use std::sync::Arc;
 
 use radius_sequencer_sdk::{
-    liveness::publisher::Publisher,
+    liveness::{publisher::Publisher, types::Address},
     signature::{ChainType, Signature},
 };
 use tracing::info;
 
-use crate::{models::prelude::*, rpc::prelude::*, sequencer_types::prelude::*};
+use crate::{
+    models::prelude::*,
+    rpc::{methods::serialize_to_bincode, prelude::*},
+    sequencer_types::prelude::*,
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetRpcUrlListMessage {
-    address: Vec<u8>,
+    address: Address,
     chain_type: ChainType,
     cluster_id: ClusterId,
-    sequencer_address_list: Vec<Vec<u8>>,
-}
-
-impl std::fmt::Display for GetRpcUrlListMessage {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
+    sequencer_address_list: Vec<Address>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -30,7 +28,7 @@ pub struct GetRpcUrlList {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetRpcUrlListResponse {
-    pub rpc_url_list: Vec<(Vec<u8>, IpAddress)>,
+    pub rpc_url_list: Vec<(Address, IpAddress)>,
 }
 
 impl GetRpcUrlList {
@@ -46,8 +44,8 @@ impl GetRpcUrlList {
 
         // verify siganture
         parameter.signature.verify_signature(
-            parameter.message.to_string().as_bytes(),
-            &parameter.message.address,
+            serialize_to_bincode(&parameter.message)?.as_slice(),
+            parameter.message.address.as_slice(),
             parameter.message.chain_type,
         )?;
 

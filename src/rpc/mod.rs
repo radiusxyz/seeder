@@ -6,4 +6,8 @@ mod prelude {
 
 pub mod methods {
     pub use crate::rpc::cluster::*;
+
+    pub fn serialize_to_bincode<T: serde::Serialize>(value: &T) -> Result<Vec<u8>, bincode::Error> {
+        bincode::serialize(value)
+    }
 }

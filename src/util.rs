@@ -10,13 +10,13 @@ pub async fn health_check(sequencer_rpc_url: impl AsRef<str>) -> Result<(), Erro
     let client = Client::builder()
         .timeout(Duration::from_secs(3))
         .build()
-        .map_err(Error::HealthCheck)?;
+        .map_err(Error::InvalidURL)?;
 
     client
         .get(health_check_url)
         .send()
         .await
-        .map_err(Error::HealthCheck)?;
+        .map_err(Error::PortConnection)?;
 
     Ok(())
 }

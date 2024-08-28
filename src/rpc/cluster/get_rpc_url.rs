@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use radius_sequencer_sdk::{
-    liveness::publisher::Publisher,
+    liveness::{publisher::Publisher, types::Address},
     signature::{ChainType, Signature},
 };
 use serde::{Deserialize, Serialize};
@@ -10,21 +10,15 @@ use tracing::info;
 use crate::{
     error::Error,
     models::prelude::SequencerModel,
-    rpc::prelude::*,
+    rpc::{methods::serialize_to_bincode, prelude::*},
     sequencer_types::prelude::{ClusterId, IpAddress},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetRpcUrlMessage {
-    address: Vec<u8>,
+    address: Address,
     chain_type: ChainType,
     cluster_id: ClusterId,
-}
-
-impl std::fmt::Display for GetRpcUrlMessage {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -51,8 +45,8 @@ impl GetRpcUrl {
 
         // verify siganture
         parameter.signature.verify_signature(
-            parameter.message.to_string().as_bytes(),
-            &parameter.message.address,
+            serialize_to_bincode(&parameter.message)?.as_slice(),
+            parameter.message.address.as_slice(),
             parameter.message.chain_type,
         )?;
 

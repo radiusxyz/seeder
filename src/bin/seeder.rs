@@ -34,7 +34,7 @@ async fn main() -> Result<(), Error> {
             )
             .map_err(Error::InitializePublisher)?;
 
-            tracing::info!("Successfully initialized the liveness client.");
+            tracing::info!("Successfully initialized the publisher.");
 
             let rpc_server_handle = RpcServer::new(publisher)
                 .register_rpc_method(Deregister::METHOD_NAME, Deregister::handler)?
