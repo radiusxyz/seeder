@@ -43,11 +43,10 @@ impl Deregister {
             .get_sequencer_list(&parameter.message.cluster_id, block_number)
             .await?;
 
-        // check if the sequencer is registered
-        sequencer_list
-            .iter()
-            .find(|&address| address.as_slice() == parameter.message.address)
-            .ok_or(Error::Deregistered)?;
+        // check if the sequencer is deregistered from the contract
+        if sequencer_list.contains(&parameter.message.address) {
+            return Err(Error::NotDeregisteredFromContract.into());
+        }
 
         // remove operator model
         match SequencerModel::get_mut(&parameter.message.address) {

@@ -17,8 +17,8 @@ pub enum Error {
 
     ParseContractAddress,
 
-    UnRegistered,
-    Deregistered,
+    UnRegisteredFromContract,
+    NotDeregisteredFromContract,
 
     InvalidURL(reqwest::Error),
     PortConnection(reqwest::Error),
@@ -68,11 +68,11 @@ impl std::fmt::Display for Error {
             Self::ParseContractAddress => {
                 write!(f, "Failed to parse contract address")
             }
-            Self::UnRegistered => {
-                write!(f, "Unregistered sequencer")
+            Self::UnRegisteredFromContract => {
+                write!(f, "Sequencer is not registered from the contract")
             }
-            Self::Deregistered => {
-                write!(f, "Already deregistered sequencer")
+            Self::NotDeregisteredFromContract => {
+                write!(f, "Sequencer is not deregistered from the contract")
             }
             Self::InitializePublisher(error) => {
                 write!(f, "Failed to initialize publisher: {:?}", error)

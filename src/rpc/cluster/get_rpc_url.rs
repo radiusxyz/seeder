@@ -58,7 +58,7 @@ impl GetRpcUrl {
         sequencer_list
             .iter()
             .find(|&address| address.as_slice() == parameter.message.address)
-            .ok_or(Error::UnRegistered)?;
+            .ok_or(Error::UnRegisteredFromContract)?;
 
         let sequencer_model = SequencerModel::get(&parameter.message.address)?;
 

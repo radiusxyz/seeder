@@ -48,7 +48,7 @@ impl Register {
         sequencer_list
             .iter()
             .find(|&address| address.as_slice() == parameter.message.address)
-            .ok_or(Error::Deregistered)?;
+            .ok_or(Error::UnRegisteredFromContract)?;
 
         // health check
         let rpc_url = IpAddress::from(parameter.message.rpc_url);
