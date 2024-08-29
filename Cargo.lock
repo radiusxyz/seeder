@@ -3638,6 +3638,7 @@ dependencies = [
 name = "seeder"
 version = "0.1.0"
 dependencies = [
+ "bincode",
  "clap",
  "futures",
  "num-bigint",

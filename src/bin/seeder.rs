@@ -24,7 +24,9 @@ async fn main() -> Result<(), Error> {
             let seeder_rpc_url = config.seeder_rpc_url();
 
             // Initialize a local database.
-            Database::new(config.path().join(DATABASE_DIR_NAME))?.init();
+            Database::new(config.path().join(DATABASE_DIR_NAME))
+                .map_err(Error::Database)?
+                .init();
 
             // TODO
             let publisher = Publisher::new(
