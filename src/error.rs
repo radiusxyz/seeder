@@ -18,7 +18,7 @@ pub enum Error {
     NotDeregisteredFromContract,
 
     InvalidURL(reqwest::Error),
-    PortConnection(reqwest::Error),
+    HealthCheck(reqwest::Error),
 
     InitializePublisher(radius_sequencer_sdk::liveness::publisher::PublisherError),
 }
@@ -40,7 +40,7 @@ impl std::fmt::Display for Error {
             Self::InvalidURL(error) => {
                 write!(f, "Health-check failed. The URL is invalid: {}", error,)
             }
-            Self::PortConnection(error) => {
+            Self::HealthCheck(error) => {
                 write!(f, "Health-check failed. Make sure the sequencer is running and port-forwarded: {}", error)
             }
             Self::RemoveConfigDirectory => {
