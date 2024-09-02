@@ -3638,12 +3638,14 @@ dependencies = [
 name = "seeder"
 version = "0.1.0"
 dependencies = [
+ "bincode",
  "clap",
  "futures",
  "num-bigint",
  "radius-sequencer-sdk",
  "reqwest",
  "serde",
+ "serde_json",
  "tokio",
  "toml",
  "tracing",

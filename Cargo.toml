@@ -15,6 +15,7 @@ num-bigint = { version = "0.4", features = ["rand", "serde"] }
 radius-sequencer-sdk = { git = "https://github.com/radiusxyz/radius-sdk-rs", rev="6180b0f2eccf50b5ac7b63b5d32f1960b1abb1c8", features = ["full", "liveness-evm", "validation-eigenlayer", "signature"] }
 reqwest = { version = "0.12.4", features = ["json"] }
 serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.80"
 tokio = { version = "1.37.0", features = ["full"] }
 toml = "0.8.13"
 tracing = "0.1.37"

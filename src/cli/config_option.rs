@@ -52,7 +52,6 @@ impl ConfigOption {
 
 fn set_toml_comment(toml_string: &mut String, comment: &'static str) {
     let comment = format!("# {}\n", comment);
-
     toml_string.push_str(&comment);
 }
 

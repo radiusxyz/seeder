@@ -2,20 +2,25 @@ use std::sync::Arc;
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
-    liveness::{publisher::Publisher, types::Address},
+    liveness::types::Address,
     signature::{ChainType, Signature},
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    error::Error, models::prelude::SequencerModel, rpc::methods::serialize_to_bincode,
+    error::Error,
+    models::prelude::{ClusterInfoModel, SequencerModel},
+    rpc::methods::serialize_to_bincode,
     sequencer_types::prelude::*,
+    state::AppState,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterMessage {
     address: Address,
     chain_type: ChainType,
+    sequencing_function_type: SequencingFunctionType,
+    service_provider: ServiceProvider,
     cluster_id: ClusterId,
 }
 
@@ -28,7 +33,7 @@ pub struct Deregister {
 impl Deregister {
     pub const METHOD_NAME: &'static str = "deregister";
 
-    pub async fn handler(parameter: RpcParameter, context: Arc<Publisher>) -> Result<(), RpcError> {
+    pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Deregister>()?;
 
         // verify siganture
@@ -38,8 +43,14 @@ impl Deregister {
             parameter.message.chain_type,
         )?;
 
-        let block_number = context.get_block_number().await?;
-        let sequencer_list = context
+        let publisher = context.get_publisher(SequencingInfoKey::new(
+            Platform::from(parameter.message.chain_type),
+            parameter.message.sequencing_function_type,
+            parameter.message.service_provider,
+        ))?;
+
+        let block_number = publisher.get_block_number().await?;
+        let sequencer_list = publisher
             .get_sequencer_list(&parameter.message.cluster_id, block_number)
             .await?;
 
@@ -48,7 +59,12 @@ impl Deregister {
             return Err(Error::NotDeregisteredFromContract.into());
         }
 
-        // remove operator model
+        // remove sequencer from cluster info
+        let mut cluster_info = ClusterInfoModel::get_mut(&parameter.message.cluster_id)?;
+        cluster_info.remove_sequencer(&parameter.message.address)?;
+        cluster_info.update()?;
+
+        // remove sequencer model
         match SequencerModel::get_mut(&parameter.message.address) {
             Ok(sequencer) => {
                 sequencer.delete()?;
@@ -57,12 +73,16 @@ impl Deregister {
             Err(err) => {
                 if err.is_none_type() {
                     tracing::warn!("Already deregistered sequencer");
-                    return Ok(());
                 } else {
                     return Err(err.into());
                 }
             }
         }
+
+        // remove sequencer from app state
+        context
+            .get_cluster_info(&parameter.message.cluster_id)?
+            .remove_sequencer(&parameter.message.address)?;
 
         Ok(())
     }

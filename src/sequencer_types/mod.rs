@@ -1,7 +1,7 @@
 mod cluster;
 mod sequencer;
-// mod signer;
+mod sequencing;
 
 pub mod prelude {
-    pub use crate::sequencer_types::{cluster::*, sequencer::*};
+    pub use crate::sequencer_types::{cluster::*, sequencer::*, sequencing::*};
 }

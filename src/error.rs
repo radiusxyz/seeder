@@ -12,13 +12,23 @@ pub enum Error {
     CreateConfigDirectory,
     CreateConfigFile,
     CreatePrivateKeyFile,
-    LoadConfigOption,
-    ParseTomlString,
+    LoadConfigOption(std::io::Error),
+    ParseTomlString(toml::de::Error),
 
     ParseContractAddress,
 
     UnRegisteredFromContract,
     NotDeregisteredFromContract,
+
+    FailedToGetSequencingInfo,
+    FailedToGetPublisher,
+    FailedToGetSequencer,
+    PublisherAlreadyExists,
+    ClusterNotRegistered,
+    SequencerNotRegistered,
+
+    AlreadyRegisteredCluster,
+    AlreadyRegisteredSequencer,
 
     InvalidURL(reqwest::Error),
     PortConnection(reqwest::Error),
@@ -50,6 +60,21 @@ impl std::fmt::Display for Error {
             Self::RemoveConfigDirectory => {
                 write!(f, "Failed to remove the previous configuration directory")
             }
+            Self::ClusterNotRegistered => {
+                write!(f, "Cluster not found")
+            }
+            Self::FailedToGetSequencer => {
+                write!(f, "Failed to get rpc url")
+            }
+            Self::AlreadyRegisteredCluster => {
+                write!(f, "Cluster already registered")
+            }
+            Self::AlreadyRegisteredSequencer => {
+                write!(f, "Sequencer already registered")
+            }
+            Self::SequencerNotRegistered => {
+                write!(f, "Sequencer not found in the cluster")
+            }
             Self::CreateConfigDirectory => {
                 write!(f, "Failed to create a new configuration directory")
             }
@@ -59,11 +84,20 @@ impl std::fmt::Display for Error {
             Self::CreatePrivateKeyFile => {
                 write!(f, "Failed to create a private key file")
             }
-            Self::LoadConfigOption => {
-                write!(f, "Failed to load a config file")
+            Self::LoadConfigOption(error) => {
+                write!(f, "Failed to load a config file: {}", error)
             }
-            Self::ParseTomlString => {
-                write!(f, "Failed to parse String to TOML String")
+            Self::ParseTomlString(error) => {
+                write!(f, "Failed to parse String to TOML String: {}", error)
+            }
+            Self::FailedToGetSequencingInfo => {
+                write!(f, "Failed to get sequencing info")
+            }
+            Self::FailedToGetPublisher => {
+                write!(f, "Failed to get publisher")
+            }
+            Self::PublisherAlreadyExists => {
+                write!(f, "Publisher already exists")
             }
             Self::ParseContractAddress => {
                 write!(f, "Failed to parse contract address")

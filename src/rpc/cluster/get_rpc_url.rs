@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use radius_sequencer_sdk::{
-    liveness::{publisher::Publisher, types::Address},
+    liveness::types::Address,
     signature::{ChainType, Signature},
 };
 use serde::{Deserialize, Serialize};
@@ -9,9 +9,9 @@ use tracing::info;
 
 use crate::{
     error::Error,
-    models::prelude::SequencerModel,
     rpc::{methods::serialize_to_bincode, prelude::*},
     sequencer_types::prelude::{ClusterId, IpAddress},
+    state::AppState,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -37,7 +37,7 @@ impl GetRpcUrl {
 
     pub async fn handler(
         parameter: RpcParameter,
-        context: Arc<Publisher>,
+        context: Arc<AppState>,
     ) -> Result<GetRpcUrlResponse, RpcError> {
         let parameter = parameter.parse::<GetRpcUrl>()?;
 
@@ -50,20 +50,15 @@ impl GetRpcUrl {
             parameter.message.chain_type,
         )?;
 
-        let block_number = context.get_block_number().await?;
-        let sequencer_list = context
-            .get_sequencer_list(&parameter.message.cluster_id, block_number)
-            .await?;
-
-        sequencer_list
+        let cluster_info = context.get_cluster_info(&parameter.message.cluster_id)?;
+        let rpc_url = cluster_info
+            .sequencer_rpc_url_list()
             .iter()
-            .find(|&address| address.as_slice() == parameter.message.address)
-            .ok_or(Error::UnRegisteredFromContract)?;
+            .find(|(address, _)| address == &parameter.message.address)
+            .ok_or(Error::FailedToGetSequencer)?
+            .1
+            .clone();
 
-        let sequencer_model = SequencerModel::get(&parameter.message.address)?;
-
-        Ok(GetRpcUrlResponse {
-            rpc_url: sequencer_model.rpc_url,
-        })
+        Ok(GetRpcUrlResponse { rpc_url })
     }
 }

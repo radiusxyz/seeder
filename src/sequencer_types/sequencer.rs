@@ -2,7 +2,7 @@ use std::net::IpAddr;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct IpAddress(String);
 
 impl std::fmt::Display for IpAddress {
@@ -18,7 +18,13 @@ impl AsRef<str> for IpAddress {
 }
 
 impl From<IpAddr> for IpAddress {
-    fn from(ip_url: IpAddr) -> Self {
-        Self(ip_url.to_string())
+    fn from(ip: IpAddr) -> Self {
+        Self(ip.to_string())
+    }
+}
+
+impl From<&str> for IpAddress {
+    fn from(ip: &str) -> Self {
+        Self(ip.to_string())
     }
 }
