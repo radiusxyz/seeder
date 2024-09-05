@@ -32,12 +32,12 @@ impl AddCluster {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<AddCluster>()?;
 
-        // verify siganture
-        parameter.signature.verify_signature(
-            serialize_to_bincode(&parameter.message)?.as_slice(),
-            &parameter.message.address,
-            parameter.message.chain_type,
-        )?;
+        // // verify siganture
+        // parameter.signature.verify_signature(
+        //     serialize_to_bincode(&parameter.message)?.as_slice(),
+        //     &parameter.message.address,
+        //     parameter.message.chain_type,
+        // )?;
 
         let sequencing_info_key = SequencingInfoKey::new(
             Platform::from(parameter.message.chain_type),

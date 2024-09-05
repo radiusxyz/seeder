@@ -1,4 +1,4 @@
-use std::net::IpAddr;
+use std::net::SocketAddr;
 
 use serde::{Deserialize, Serialize};
 
@@ -17,9 +17,10 @@ impl AsRef<str> for IpAddress {
     }
 }
 
-impl From<IpAddr> for IpAddress {
-    fn from(ip: IpAddr) -> Self {
-        Self(ip.to_string())
+// Todo
+impl From<SocketAddr> for IpAddress {
+    fn from(ip: SocketAddr) -> Self {
+        Self(format!("http://{}", ip))
     }
 }
 

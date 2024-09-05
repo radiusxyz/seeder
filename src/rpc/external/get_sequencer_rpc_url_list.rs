@@ -6,12 +6,7 @@ use radius_sequencer_sdk::{
 };
 use tracing::info;
 
-use crate::{
-    models::prelude::*,
-    rpc::{methods::serialize_to_bincode, prelude::*},
-    sequencer_types::prelude::*,
-    state::AppState,
-};
+use crate::{models::prelude::*, rpc::prelude::*, sequencer_types::prelude::*, state::AppState};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetSequencerRpcUrlListMessage {
@@ -46,26 +41,22 @@ impl GetSequencerRpcUrlList {
             parameter.message.cluster_id
         );
 
-        // verify siganture
-        parameter.signature.verify_signature(
-            serialize_to_bincode(&parameter.message)?.as_slice(),
-            parameter.message.address.as_slice(),
-            parameter.message.chain_type,
-        )?;
+        // // verify siganture
+        // parameter.signature.verify_signature(
+        //     serialize_to_bincode(&parameter.message)?.as_slice(),
+        //     parameter.message.address.as_slice(),
+        //     parameter.message.chain_type,
+        // )?;
+        let sequencer_list = parameter.message.sequencer_address_list;
 
-        let cluster_info = context.get_cluster_info(&parameter.message.cluster_id)?;
-        let sequencer_rpc_url_list = cluster_info.sequencer_rpc_url_list();
-
-        let rpc_url_list = parameter
-            .message
-            .sequencer_address_list
+        let rpc_url_list: Vec<(Address, Option<IpAddress>)> = sequencer_list
             .into_iter()
-            .filter_map(|address| {
-                sequencer_rpc_url_list
-                    .iter()
-                    .find(|(sequencer_address, _)| sequencer_address == &address)
-                    .cloned()
+            .map(|address| {
+                SequencerModel::get(&address)
+                    .ok()
+                    .map(|sequencer| (address, sequencer.rpc_url))
             })
+            .flatten()
             .collect();
 
         Ok(GetSequencerRpcUrlListResponse { rpc_url_list })

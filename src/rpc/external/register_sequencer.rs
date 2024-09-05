@@ -1,4 +1,4 @@
-use std::{net::IpAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc};
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
@@ -23,7 +23,7 @@ struct RegisterSequencerMessage {
     sequencing_function_type: SequencingFunctionType,
     service_provider: ServiceProvider,
     cluster_id: ClusterId,
-    rpc_url: IpAddr,
+    rpc_url: SocketAddr,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -38,38 +38,51 @@ impl RegisterSequencer {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<RegisterSequencer>()?;
 
-        // verify siganture
-        parameter.signature.verify_signature(
-            serialize_to_bincode(&parameter.message)?.as_slice(),
-            parameter.message.address.as_slice(),
-            parameter.message.chain_type,
-        )?;
-
-        let publisher = context.get_publisher(SequencingInfoKey::new(
+        let sequencing_info_key = SequencingInfoKey::new(
             Platform::from(parameter.message.chain_type),
             parameter.message.sequencing_function_type,
             parameter.message.service_provider,
-        ))?;
+        );
 
-        let block_number = publisher.get_block_number().await?;
-        let sequencer_list = publisher
-            .get_sequencer_list(&parameter.message.cluster_id, block_number)
-            .await?;
+        // Todo: check if the sequencer is registered in the contract
+        if matches!(
+            SequencingCondition::from(sequencing_info_key),
+            SequencingCondition::EthereumLivenessRadius
+        ) {
+            // verify siganture
+            parameter.signature.verify_signature(
+                serialize_to_bincode(&parameter.message)?.as_slice(),
+                parameter.message.address.as_slice(),
+                parameter.message.chain_type,
+            )?;
 
-        // check if the sequencer is registered in the contract
-        sequencer_list
-            .iter()
-            .find(|&address| address.as_slice() == parameter.message.address)
-            .ok_or(Error::UnRegisteredFromContract)?;
+            let publisher = context.get_publisher(SequencingInfoKey::new(
+                Platform::from(parameter.message.chain_type),
+                parameter.message.sequencing_function_type,
+                parameter.message.service_provider,
+            ))?;
+
+            let block_number = publisher.get_block_number().await?;
+            let sequencer_list = publisher
+                .get_sequencer_list(&parameter.message.cluster_id, block_number)
+                .await?;
+
+            // check if the sequencer is registered in the contract
+            sequencer_list
+                .iter()
+                .find(|&address| address.as_slice() == parameter.message.address)
+                .ok_or(Error::UnRegisteredFromContract)?;
+        }
 
         // health check
         let rpc_url = IpAddress::from(parameter.message.rpc_url);
         health_check(rpc_url.as_ref()).await?;
 
-        // add sequencer to cluster info
-        let mut cluster_info = ClusterInfoModel::get_mut(&parameter.message.cluster_id)?;
-        cluster_info.add_sequencer(parameter.message.address, Some(rpc_url.clone()))?;
-        cluster_info.update()?;
+        // Todo: remove cluster info
+        // // add sequencer to cluster info
+        // let mut cluster_info = ClusterInfoModel::get_mut(&parameter.message.cluster_id)?;
+        // cluster_info.add_sequencer(parameter.message.address, Some(rpc_url.clone()))?;
+        // cluster_info.update()?;
 
         match SequencerModel::get(&parameter.message.address) {
             // TODO: change(tmp logic when already registered)
@@ -85,6 +98,7 @@ impl RegisterSequencer {
                     let sequencer = SequencerModel::new(parameter.message.address, Some(rpc_url));
 
                     sequencer.put()?;
+                    tracing::info!("Added sequencer: {:?}", sequencer);
                 } else {
                     tracing::error!("Failed to add sequencer: {:?}", err);
                     return Err(err.into());
