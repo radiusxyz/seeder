@@ -14,34 +14,38 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct GetRpcUrlListMessage {
+struct GetSequencerRpcUrlListAtBlockHeigthMessage {
     address: Address,
     chain_type: ChainType,
     cluster_id: ClusterId,
-    sequencer_address_list: Vec<Address>,
+    block_height: u64,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetRpcUrlList {
+pub struct GetSequencerRpcUrlListAtBlockHeight {
     signature: Signature,
-    message: GetRpcUrlListMessage,
+    message: GetSequencerRpcUrlListAtBlockHeigthMessage,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetRpcUrlListResponse {
+pub struct GetSequencerRpcUrlListAtBlockHeighResponse {
     pub rpc_url_list: Vec<(Address, Option<IpAddress>)>,
+    pub block_height: u64,
 }
 
-impl GetRpcUrlList {
-    pub const METHOD_NAME: &'static str = "get_rpc_url_list";
+impl GetSequencerRpcUrlListAtBlockHeight {
+    pub const METHOD_NAME: &'static str = "get_sequencer_rpc_url_list_at_block_height";
 
     pub async fn handler(
         parameter: RpcParameter,
         context: Arc<AppState>,
-    ) -> Result<GetRpcUrlListResponse, RpcError> {
-        let parameter = parameter.parse::<GetRpcUrlList>()?;
+    ) -> Result<GetSequencerRpcUrlListAtBlockHeighResponse, RpcError> {
+        let parameter = parameter.parse::<GetSequencerRpcUrlListAtBlockHeight>()?;
 
-        info!("get_rpc_url_list: {:?}", parameter.message.cluster_id);
+        info!(
+            "get_sequencer_rpc_url_list_for_rollup: {:?}",
+            parameter.message.cluster_id
+        );
 
         // verify siganture
         parameter.signature.verify_signature(
@@ -50,12 +54,21 @@ impl GetRpcUrlList {
             parameter.message.chain_type,
         )?;
 
+        let sequencing_key =
+            ClusterInfoModel::get(&parameter.message.cluster_id)?.sequencing_info_key();
+
+        let publisher = context.get_publisher(sequencing_key)?;
+        let sequencer_list = publisher
+            .get_sequencer_list(
+                &parameter.message.cluster_id,
+                parameter.message.block_height,
+            )
+            .await?;
+
         let cluster_info = context.get_cluster_info(&parameter.message.cluster_id)?;
         let sequencer_rpc_url_list = cluster_info.sequencer_rpc_url_list();
 
-        let rpc_url_list = parameter
-            .message
-            .sequencer_address_list
+        let rpc_url_list = sequencer_list
             .into_iter()
             .filter_map(|address| {
                 sequencer_rpc_url_list
@@ -65,6 +78,9 @@ impl GetRpcUrlList {
             })
             .collect();
 
-        Ok(GetRpcUrlListResponse { rpc_url_list })
+        Ok(GetSequencerRpcUrlListAtBlockHeighResponse {
+            rpc_url_list,
+            block_height: parameter.message.block_height,
+        })
     }
 }

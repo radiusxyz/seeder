@@ -17,7 +17,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct RegisterMessage {
+struct RegisterSequencerMessage {
     address: Address,
     chain_type: ChainType,
     sequencing_function_type: SequencingFunctionType,
@@ -27,16 +27,16 @@ struct RegisterMessage {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Register {
+pub struct RegisterSequencer {
     signature: Signature,
-    message: RegisterMessage,
+    message: RegisterSequencerMessage,
 }
 
-impl Register {
-    pub const METHOD_NAME: &'static str = "register";
+impl RegisterSequencer {
+    pub const METHOD_NAME: &'static str = "register_sequencer";
 
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
-        let parameter = parameter.parse::<Register>()?;
+        let parameter = parameter.parse::<RegisterSequencer>()?;
 
         // verify siganture
         parameter.signature.verify_signature(

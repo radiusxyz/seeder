@@ -1,4 +1,4 @@
-mod cluster;
+mod external;
 mod internal;
 
 mod prelude {
@@ -6,7 +6,7 @@ mod prelude {
 }
 
 pub mod methods {
-    pub use crate::rpc::{cluster::*, internal::*};
+    pub use crate::rpc::{external::*, internal::*};
 
     pub fn serialize_to_bincode<T: serde::Serialize>(value: &T) -> Result<Vec<u8>, bincode::Error> {
         bincode::serialize(value)

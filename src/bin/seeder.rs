@@ -39,14 +39,20 @@ async fn main() -> Result<(), Error> {
 
             let rpc_server_handle = RpcServer::new(app_state)
                 .register_rpc_method(AddCluster::METHOD_NAME, AddCluster::handler)?
-                .register_rpc_method(Deregister::METHOD_NAME, Deregister::handler)?
-                .register_rpc_method(GetRpcUrl::METHOD_NAME, GetRpcUrl::handler)?
-                .register_rpc_method(GetRpcUrlList::METHOD_NAME, GetRpcUrlList::handler)?
                 .register_rpc_method(
-                    GetRpcUrlListAtBlockHeight::METHOD_NAME,
-                    GetRpcUrlListAtBlockHeight::handler,
+                    DeregisterSequencer::METHOD_NAME,
+                    DeregisterSequencer::handler,
                 )?
-                .register_rpc_method(Register::METHOD_NAME, Register::handler)?
+                .register_rpc_method(GetSequencerRpcUrl::METHOD_NAME, GetSequencerRpcUrl::handler)?
+                .register_rpc_method(
+                    GetSequencerRpcUrlList::METHOD_NAME,
+                    GetSequencerRpcUrlList::handler,
+                )?
+                .register_rpc_method(
+                    GetSequencerRpcUrlListAtBlockHeight::METHOD_NAME,
+                    GetSequencerRpcUrlListAtBlockHeight::handler,
+                )?
+                .register_rpc_method(RegisterSequencer::METHOD_NAME, RegisterSequencer::handler)?
                 .register_rpc_method(AddSequencingInfo::METHOD_NAME, AddSequencingInfo::handler)?
                 .register_rpc_method(GetSequencingInfo::METHOD_NAME, GetSequencingInfo::handler)?
                 .register_rpc_method(GetSequencingInfos::METHOD_NAME, GetSequencingInfos::handler)?

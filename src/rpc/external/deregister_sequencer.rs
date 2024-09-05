@@ -16,7 +16,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct DeregisterMessage {
+struct DeregisterSequencerMessage {
     address: Address,
     chain_type: ChainType,
     sequencing_function_type: SequencingFunctionType,
@@ -25,16 +25,16 @@ struct DeregisterMessage {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Deregister {
+pub struct DeregisterSequencer {
     signature: Signature,
-    message: DeregisterMessage,
+    message: DeregisterSequencerMessage,
 }
 
-impl Deregister {
-    pub const METHOD_NAME: &'static str = "deregister";
+impl DeregisterSequencer {
+    pub const METHOD_NAME: &'static str = "deregister_sequencer";
 
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
-        let parameter = parameter.parse::<Deregister>()?;
+        let parameter = parameter.parse::<DeregisterSequencer>()?;
 
         // verify siganture
         parameter.signature.verify_signature(

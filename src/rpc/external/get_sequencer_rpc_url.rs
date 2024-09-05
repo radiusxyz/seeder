@@ -15,33 +15,33 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct GetRpcUrlMessage {
+struct GetSequencerRpcUrlMessage {
     address: Address,
     chain_type: ChainType,
     cluster_id: ClusterId,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetRpcUrl {
+pub struct GetSequencerRpcUrl {
     signature: Signature,
-    message: GetRpcUrlMessage,
+    message: GetSequencerRpcUrlMessage,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetRpcUrlResponse {
+pub struct GetSequencerRpcUrlResponse {
     pub rpc_url: Option<IpAddress>,
 }
 
-impl GetRpcUrl {
-    pub const METHOD_NAME: &'static str = "get_rpc_url";
+impl GetSequencerRpcUrl {
+    pub const METHOD_NAME: &'static str = "get_sequencer_rpc_url";
 
     pub async fn handler(
         parameter: RpcParameter,
         context: Arc<AppState>,
-    ) -> Result<GetRpcUrlResponse, RpcError> {
-        let parameter = parameter.parse::<GetRpcUrl>()?;
+    ) -> Result<GetSequencerRpcUrlResponse, RpcError> {
+        let parameter = parameter.parse::<GetSequencerRpcUrl>()?;
 
-        info!("get_rpc_url: {:?}", parameter.message.address);
+        info!("get_sequencer_rpc_url: {:?}", parameter.message.address);
 
         // verify siganture
         parameter.signature.verify_signature(
@@ -59,6 +59,6 @@ impl GetRpcUrl {
             .1
             .clone();
 
-        Ok(GetRpcUrlResponse { rpc_url })
+        Ok(GetSequencerRpcUrlResponse { rpc_url })
     }
 }
