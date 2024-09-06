@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, sync::Arc};
 
-use radius_sequencer_sdk::liveness::publisher::Publisher;
+use radius_sequencer_sdk::liveness_radius::publisher::Publisher;
 use tokio::sync::{Mutex, MutexGuard};
 
 use crate::error::Error;

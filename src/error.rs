@@ -37,7 +37,7 @@ pub enum Error {
     InvalidURL(reqwest::Error),
     PortConnection(reqwest::Error),
 
-    InitializePublisher(radius_sequencer_sdk::liveness::publisher::PublisherError),
+    InitializePublisher(radius_sequencer_sdk::liveness_radius::publisher::PublisherError),
 }
 
 impl std::fmt::Debug for Error {

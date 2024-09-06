@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, sync::Arc};
 
 use radius_sequencer_sdk::{
-    json_rpc::RpcServer, kvstore::KvStore as Database, liveness::publisher::Publisher,
+    json_rpc::RpcServer, kvstore::KvStore as Database, liveness_radius::publisher::Publisher,
 };
 use seeder::{
     cli::{Cli, Commands, Config, ConfigPath, DATABASE_DIR_NAME},
@@ -70,20 +70,9 @@ async fn initialize_app_state() -> Result<AppState, Error> {
     // init app state
     let app_state = AppState::new(BTreeMap::new());
 
-    // get or init sequencing info
-    let sequencing_infos = match SequencingInfosModel::get() {
-        Ok(sequencing_infos) => sequencing_infos,
-        Err(err) => {
-            if err.is_none_type() {
-                // if is none, init sequencing_info
-                let sequencing_info = SequencingInfosModel::default();
-                sequencing_info.put()?;
-                sequencing_info
-            } else {
-                return Err(err.into());
-            }
-        }
-    };
+    // get or init
+    let sequencing_infos = SequencingInfosModel::get_or_default()?;
+    sequencing_infos.put()?;
 
     for (key, sequencing_info_payload) in sequencing_infos.sequencing_infos() {
         match sequencing_info_payload {

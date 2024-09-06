@@ -10,7 +10,6 @@ use crate::{
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfos {}
 
-// TODO:
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfosResponse {
     sequencing_infos: BTreeMap<String, SequencingInfoPayload>,
@@ -23,8 +22,7 @@ impl GetSequencingInfos {
         _parameter: RpcParameter,
         _context: Arc<AppState>,
     ) -> Result<GetSequencingInfosResponse, RpcError> {
-        let sequencing_infos_model = SequencingInfosModel::get()?;
-        let sequencing_infos = sequencing_infos_model.sequencing_infos().clone();
+        let sequencing_infos = SequencingInfosModel::get()?.sequencing_infos().clone();
 
         Ok(GetSequencingInfosResponse { sequencing_infos })
     }

@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
-    // liveness::types::Address,
     signature::{ChainType, Signature},
 };
 use serde::{Deserialize, Serialize};
@@ -92,7 +91,6 @@ impl AddRollup {
                     );
 
                     rollup.put()?;
-                    tracing::info!("Added rollup: {:?}", rollup);
                 } else {
                     tracing::error!("Failed to add rollup: {:?}", err);
                     return Err(err.into());

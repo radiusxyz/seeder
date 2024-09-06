@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use radius_sequencer_sdk::liveness::publisher::Publisher;
+use radius_sequencer_sdk::liveness_radius::publisher::Publisher;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -69,12 +69,12 @@ impl AddSequencingInfo {
         let mut sequencing_infos = SequencingInfosModel::get_mut()?;
 
         let sequencing_key = sequencing_key(parameter.platform, parameter.service_provider);
-        // Todo: change key
         if sequencing_infos
             .sequencing_infos()
             .get(&sequencing_key)
             .is_some()
         {
+            tracing::error!("SequencingInfo already exists: {:?}", sequencing_key);
             return Err(Error::ExistSequencingInfo.into());
         }
 
@@ -84,6 +84,7 @@ impl AddSequencingInfo {
         match parameter.payload {
             SequencingInfoPayload::Ethereum(payload) => {
                 if context.get_publisher(&sequencing_key).await.is_ok() {
+                    tracing::error!("Publisher already exists: {:?}", sequencing_key);
                     return Err(Error::PublisherAlreadyExists.into());
                 }
 

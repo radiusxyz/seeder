@@ -71,7 +71,8 @@ impl GetClusterInfo {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address.as_slice() == parameter.message.address);
+                    .find(|&address| address.as_slice() == parameter.message.address)
+                    .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
         }

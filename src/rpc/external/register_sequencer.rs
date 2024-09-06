@@ -49,6 +49,12 @@ impl RegisterSequencer {
             parameter.message.service_provider,
         );
 
+        tracing::info!(
+            "register_sequencer: {:?}, sequencing_key: {}",
+            parameter.message.address,
+            sequencing_key
+        );
+
         let sequencing_info = SequencingInfosModel::get()?;
         let sequencing_info_payload = sequencing_info
             .sequencing_infos()
@@ -76,14 +82,11 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
+        // put sequencer if not exists
         match SequencerModel::get(&parameter.message.address) {
             Ok(sequencer) => {
-                tracing::warn!("Already registered sequencer: {:?}", sequencer);
-
-                let sequencer =
-                    SequencerModel::new(parameter.message.address, Some(parameter.message.rpc_url));
-
-                sequencer.put()?;
+                tracing::error!("Already registered sequencer: {:?}", sequencer);
+                return Err(Error::AlreadyRegisteredSequencer.into());
             }
             Err(err) => {
                 if err.is_none_type() {
@@ -93,7 +96,6 @@ impl RegisterSequencer {
                     );
 
                     sequencer.put()?;
-                    tracing::info!("Added sequencer: {:?}", sequencer);
                 } else {
                     tracing::error!("Failed to add sequencer: {:?}", err);
                     return Err(err.into());

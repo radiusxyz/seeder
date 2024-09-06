@@ -29,6 +29,11 @@ impl SequencingInfosModel {
         database()?.get(&key)
     }
 
+    pub fn get_or_default() -> Result<Self, DbError> {
+        let key = Self::ID;
+        database()?.get_or_default(&key)
+    }
+
     pub fn get_mut() -> Result<Lock<'static, Self>, DbError> {
         let key = Self::ID;
         database()?.get_mut(&key)
