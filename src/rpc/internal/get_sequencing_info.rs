@@ -3,14 +3,17 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    error::Error,
+    models::prelude::SequencingInfosModel,
     rpc::prelude::*,
-    sequencer_types::prelude::{SequencingInfoKey, SequencingInfoPayload},
+    sequencer_types::prelude::{sequencing_key, Platform, SequencingInfoPayload, ServiceProvider},
     state::AppState,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfo {
-    pub sequencing_info_key: SequencingInfoKey,
+    platform: Platform,
+    service_provider: ServiceProvider,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -23,10 +26,16 @@ impl GetSequencingInfo {
 
     pub async fn handler(
         parameter: RpcParameter,
-        context: Arc<AppState>,
+        _context: Arc<AppState>,
     ) -> Result<GetSequencingInfoResponse, RpcError> {
         let parameter = parameter.parse::<GetSequencingInfo>()?;
-        let sequencing_info_payload = context.get_sequencing_info(parameter.sequencing_info_key)?;
+        let sequencing_key = sequencing_key(parameter.platform, parameter.service_provider);
+
+        let sequencing_info_payload = SequencingInfosModel::get()?
+            .sequencing_infos()
+            .get(&sequencing_key)
+            .ok_or(Error::FailedToGetSequencingInfo)?
+            .clone();
 
         Ok(GetSequencingInfoResponse {
             sequencing_info_payload,

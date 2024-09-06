@@ -9,14 +9,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::Error,
-    models::prelude::{SequencerModel, SequencingInfosModel},
+    models::prelude::{RollupModel, SequencingInfosModel},
     sequencer_types::prelude::*,
     state::AppState,
     util::health_check,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct RegisterSequencerMessage {
+struct AddRollupMessage {
     address: Vec<u8>,
     chain_type: ChainType,
     platform: Platform,
@@ -26,16 +26,16 @@ struct RegisterSequencerMessage {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct RegisterSequencer {
+pub struct AddRollup {
     signature: Signature,
-    message: RegisterSequencerMessage,
+    message: AddRollupMessage,
 }
 
-impl RegisterSequencer {
-    pub const METHOD_NAME: &'static str = "register_sequencer";
+impl AddRollup {
+    pub const METHOD_NAME: &'static str = "add_rollup";
 
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
-        let parameter = parameter.parse::<RegisterSequencer>()?;
+        let parameter = parameter.parse::<AddRollup>()?;
 
         // // verify siganture
         // parameter.signature.verify_signature(
@@ -67,8 +67,7 @@ impl RegisterSequencer {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address.as_slice() == parameter.message.address)
-                    .ok_or(Error::UnRegisteredFromContract)?;
+                    .find(|&address| address.as_slice() == parameter.message.address);
             }
             _ => {}
         }
@@ -76,26 +75,26 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        match SequencerModel::get(&parameter.message.address) {
-            Ok(sequencer) => {
-                tracing::warn!("Already registered sequencer: {:?}", sequencer);
+        match RollupModel::get(&parameter.message.address) {
+            Ok(rollup) => {
+                tracing::warn!("Already added rollup: {:?}", rollup);
 
-                let sequencer =
-                    SequencerModel::new(parameter.message.address, Some(parameter.message.rpc_url));
+                let rollup =
+                    RollupModel::new(parameter.message.address, Some(parameter.message.rpc_url));
 
-                sequencer.put()?;
+                rollup.put()?;
             }
             Err(err) => {
                 if err.is_none_type() {
-                    let sequencer = SequencerModel::new(
+                    let rollup = RollupModel::new(
                         parameter.message.address,
                         Some(parameter.message.rpc_url),
                     );
 
-                    sequencer.put()?;
-                    tracing::info!("Added sequencer: {:?}", sequencer);
+                    rollup.put()?;
+                    tracing::info!("Added rollup: {:?}", rollup);
                 } else {
-                    tracing::error!("Failed to add sequencer: {:?}", err);
+                    tracing::error!("Failed to add rollup: {:?}", err);
                     return Err(err.into());
                 }
             }

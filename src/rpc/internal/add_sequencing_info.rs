@@ -5,25 +5,57 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::Error,
-    models::prelude::{SequencingInfoKeyListModel, SequencingInfoModel},
+    models::prelude::SequencingInfosModel,
     rpc::prelude::*,
     sequencer_types::prelude::{
-        ContractAddress, IpAddress, Platform, SequencingCondition, SequencingFunctionType,
-        SequencingInfoKey, SequencingInfoPayload, ServiceProvider,
+        sequencing_key, LivenessEthereum, LivenessLocal, Platform, SequencingInfoPayload,
+        ServiceProvider,
     },
     state::AppState,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(try_from = "SequencingInfo")]
 pub struct AddSequencingInfo {
-    pub platform: Platform,                               // Local / Ethereum
-    pub sequencing_function_type: SequencingFunctionType, // Liveness / Validation
-    pub service_provider: ServiceProvider,                // Radius / EigenLayer
+    pub platform: Platform,
+    pub service_provider: ServiceProvider,
+    pub payload: SequencingInfoPayload,
+}
 
-    pub provider_rpc_url: Option<IpAddress>,
-    pub provider_websocket_url: Option<IpAddress>,
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct SequencingInfo {
+    platform: Platform,
+    service_provider: ServiceProvider,
+    payload: serde_json::Value,
+}
 
-    pub contract_address: Option<ContractAddress>,
+impl TryFrom<SequencingInfo> for AddSequencingInfo {
+    type Error = Error;
+
+    fn try_from(value: SequencingInfo) -> Result<Self, Self::Error> {
+        match value.platform {
+            Platform::Ethereum => {
+                let payload: LivenessEthereum =
+                    serde_json::from_value(value.payload).map_err(Error::Deserialize)?;
+
+                Ok(Self {
+                    platform: value.platform,
+                    service_provider: value.service_provider,
+                    payload: SequencingInfoPayload::Ethereum(payload),
+                })
+            }
+            Platform::Local => {
+                let payload: LivenessLocal =
+                    serde_json::from_value(value.payload).map_err(Error::Deserialize)?;
+
+                Ok(Self {
+                    platform: value.platform,
+                    service_provider: value.service_provider,
+                    payload: SequencingInfoPayload::Local(payload),
+                })
+            }
+        }
+    }
 }
 
 impl AddSequencingInfo {
@@ -32,55 +64,42 @@ impl AddSequencingInfo {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<AddSequencingInfo>()?;
 
-        let sequencing_info_key = SequencingInfoKey::new(
-            parameter.platform,
-            parameter.sequencing_function_type,
-            parameter.service_provider,
-        );
-        let sequencing_info_payload = SequencingInfoPayload::new(
-            parameter.provider_rpc_url.clone(),
-            parameter.provider_websocket_url,
-            parameter.contract_address.clone(),
-        );
+        tracing::info!("add_sequencing_info: {:?}", parameter);
 
-        if matches!(
-            SequencingCondition::from(sequencing_info_key),
-            SequencingCondition::EthereumLivenessRadius
-        ) {
-            if context.get_publisher(sequencing_info_key).is_ok() {
-                return Err(Error::PublisherAlreadyExists.into());
-            }
+        let mut sequencing_infos = SequencingInfosModel::get_mut()?;
 
-            let publisher = Publisher::new(
-                parameter.provider_rpc_url.unwrap(),
-                "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-                parameter.contract_address.unwrap(),
-            )?;
-
-            // add publisher to app state
-            context.add_publisher(sequencing_info_key, Arc::new(publisher));
+        let sequencing_key = sequencing_key(parameter.platform, parameter.service_provider);
+        // Todo: change key
+        if sequencing_infos
+            .sequencing_infos()
+            .get(&sequencing_key)
+            .is_some()
+        {
+            return Err(Error::ExistSequencingInfo.into());
         }
 
-        let mut sequencing_info_key_list_model = match SequencingInfoKeyListModel::get_mut() {
-            Ok(sequencing_info_key_list_model) => sequencing_info_key_list_model,
-            Err(err) => {
-                if err.is_none_type() {
-                    SequencingInfoKeyListModel::default().put()?;
-                    SequencingInfoKeyListModel::get_mut()?
-                } else {
-                    return Err(err.into());
+        sequencing_infos.insert(sequencing_key.clone(), parameter.payload.clone());
+        sequencing_infos.update()?;
+
+        match parameter.payload {
+            SequencingInfoPayload::Ethereum(payload) => {
+                if context.get_publisher(&sequencing_key).await.is_ok() {
+                    return Err(Error::PublisherAlreadyExists.into());
                 }
+
+                let publisher = Publisher::new(
+                    payload.rpc_url,
+                    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+                    payload.contract_address,
+                )?;
+
+                // add publisher to app state
+                context
+                    .add_publisher(sequencing_key, Arc::new(publisher))
+                    .await;
             }
-        };
-
-        sequencing_info_key_list_model.add_sequencing_info_key(sequencing_info_key);
-        sequencing_info_key_list_model.update()?;
-
-        // Add sequencing info to db
-        SequencingInfoModel::new(sequencing_info_key, sequencing_info_payload.clone())
-            .put(sequencing_info_key)?;
-        // Add sequencing info to app state
-        context.add_sequencing_info(sequencing_info_key, sequencing_info_payload);
+            _ => {}
+        }
 
         Ok(())
     }

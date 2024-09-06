@@ -1,8 +1,11 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::BTreeMap, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{rpc::prelude::*, sequencer_types::prelude::SequencingInfoPayload, state::AppState};
+use crate::{
+    models::prelude::SequencingInfosModel, rpc::prelude::*,
+    sequencer_types::prelude::SequencingInfoPayload, state::AppState,
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfos {}
@@ -10,7 +13,7 @@ pub struct GetSequencingInfos {}
 // TODO:
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfosResponse {
-    sequencing_infos: HashMap<String, SequencingInfoPayload>,
+    sequencing_infos: BTreeMap<String, SequencingInfoPayload>,
 }
 
 impl GetSequencingInfos {
@@ -18,16 +21,10 @@ impl GetSequencingInfos {
 
     pub async fn handler(
         _parameter: RpcParameter,
-        context: Arc<AppState>,
+        _context: Arc<AppState>,
     ) -> Result<GetSequencingInfosResponse, RpcError> {
-        let sequencing_infos = context
-            .sequencing_infos()
-            .as_ref()
-            .iter()
-            .map(|(sequencing_info_key, sequencing_info)| {
-                (sequencing_info_key.to_string(), sequencing_info.clone())
-            })
-            .collect();
+        let sequencing_infos_model = SequencingInfosModel::get()?;
+        let sequencing_infos = sequencing_infos_model.sequencing_infos().clone();
 
         Ok(GetSequencingInfosResponse { sequencing_infos })
     }

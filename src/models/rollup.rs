@@ -3,22 +3,22 @@ pub use serde::{Deserialize, Serialize};
 use crate::models::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct SequencerModel {
-    pub sequencer_address: Vec<u8>,
+pub struct RollupModel {
+    pub rollup_address: Vec<u8>,
     pub rpc_url: Option<String>,
 }
 
-impl SequencerModel {
-    pub fn new(sequencer_address: Vec<u8>, rpc_url: Option<String>) -> Self {
+impl RollupModel {
+    pub fn new(address: Vec<u8>, rpc_url: Option<String>) -> Self {
         Self {
-            sequencer_address,
+            rollup_address: address,
             rpc_url,
         }
     }
 }
 
-impl SequencerModel {
-    pub const ID: &'static str = stringify!(SequencerModel);
+impl RollupModel {
+    pub const ID: &'static str = stringify!(RollupModel);
 
     pub fn get(address: &[u8]) -> Result<Self, DbError> {
         let key = (Self::ID, address);
@@ -31,12 +31,12 @@ impl SequencerModel {
     }
 
     pub fn put(&self) -> Result<(), DbError> {
-        let key = (Self::ID, self.sequencer_address.clone());
+        let key = (Self::ID, self.rollup_address.clone());
         database()?.put(&key, self)
     }
 
     pub fn delete(&self) -> Result<(), DbError> {
-        let key = (Self::ID, self.sequencer_address.clone());
+        let key = (Self::ID, self.rollup_address.clone());
         database()?.delete(&key)
     }
 }

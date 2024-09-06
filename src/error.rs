@@ -8,6 +8,8 @@ pub enum Error {
     JsonRPC(radius_sequencer_sdk::json_rpc::Error),
     SignatureMismatch,
 
+    Deserialize(serde_json::Error),
+
     RemoveConfigDirectory,
     CreateConfigDirectory,
     CreateConfigFile,
@@ -26,6 +28,8 @@ pub enum Error {
     PublisherAlreadyExists,
     ClusterNotRegistered,
     SequencerNotRegistered,
+
+    ExistSequencingInfo,
 
     AlreadyRegisteredCluster,
     AlreadyRegisteredSequencer,
@@ -54,6 +58,7 @@ impl std::fmt::Display for Error {
             Self::InvalidURL(error) => {
                 write!(f, "Health-check failed. The URL is invalid: {}", error,)
             }
+            Self::Deserialize(error) => write!(f, "Failed to deserialize: {}", error),
             Self::PortConnection(error) => {
                 write!(f, "Health-check failed. Make sure the sequencer is running and port-forwarded: {}", error)
             }
@@ -89,6 +94,9 @@ impl std::fmt::Display for Error {
             }
             Self::ParseTomlString(error) => {
                 write!(f, "Failed to parse String to TOML String: {}", error)
+            }
+            Self::ExistSequencingInfo => {
+                write!(f, "Sequencing info already exists")
             }
             Self::FailedToGetSequencingInfo => {
                 write!(f, "Failed to get sequencing info")

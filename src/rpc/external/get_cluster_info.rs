@@ -8,43 +8,42 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct GetSequencerRpcUrlListMessage {
+struct GetClusterInfoMessage {
     address: Vec<u8>,
     chain_type: ChainType,
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
     sequencer_address_list: Vec<Vec<u8>>,
+    rollup_address_list: Vec<Vec<u8>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetSequencerRpcUrlList {
+pub struct GetClusterInfo {
     signature: Signature,
-    message: GetSequencerRpcUrlListMessage,
+    message: GetClusterInfoMessage,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetSequencerRpcUrlListResponse {
-    pub rpc_url_list: Vec<(Vec<u8>, Option<String>)>,
+pub struct GetClusterInfoResponse {
+    pub sequencer_rpc_url_list: Vec<(Vec<u8>, Option<String>)>,
+    pub rollup_rpc_url_list: Vec<(Vec<u8>, Option<String>)>,
 }
 
-impl GetSequencerRpcUrlList {
-    pub const METHOD_NAME: &'static str = "get_sequencer_rpc_url_list";
+impl GetClusterInfo {
+    pub const METHOD_NAME: &'static str = "get_cluster_info";
 
     pub async fn handler(
         parameter: RpcParameter,
         context: Arc<AppState>,
-    ) -> Result<GetSequencerRpcUrlListResponse, RpcError> {
-        let parameter = parameter.parse::<GetSequencerRpcUrlList>()?;
+    ) -> Result<GetClusterInfoResponse, RpcError> {
+        let parameter = parameter.parse::<GetClusterInfo>()?;
 
-        info!(
-            "get_sequencer_rpc_url_list: {:?}",
-            parameter.message.cluster_id
-        );
+        info!("get_cluster_info: {:?}", parameter.message.cluster_id);
 
         // // verify siganture
         // parameter.signature.verify_signature(
-        //     rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
+        //     serialize_to_bincode(&parameter.message)?.as_slice(),
         //     parameter.message.address.as_slice(),
         //     parameter.message.chain_type,
         // )?;
@@ -77,7 +76,7 @@ impl GetSequencerRpcUrlList {
             _ => {}
         }
 
-        let rpc_url_list: Vec<(Vec<u8>, Option<String>)> = parameter
+        let sequencer_rpc_url_list: Vec<(Vec<u8>, Option<String>)> = parameter
             .message
             .sequencer_address_list
             .into_iter()
@@ -88,6 +87,20 @@ impl GetSequencerRpcUrlList {
             })
             .collect();
 
-        Ok(GetSequencerRpcUrlListResponse { rpc_url_list })
+        let rollup_rpc_url_list: Vec<(Vec<u8>, Option<String>)> = parameter
+            .message
+            .rollup_address_list
+            .into_iter()
+            .filter_map(|address| {
+                RollupModel::get(&address)
+                    .ok()
+                    .map(|sequencer| (address, sequencer.rpc_url))
+            })
+            .collect();
+
+        Ok(GetClusterInfoResponse {
+            sequencer_rpc_url_list,
+            rollup_rpc_url_list,
+        })
     }
 }
