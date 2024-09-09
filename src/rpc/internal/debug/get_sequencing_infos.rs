@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetSequencingInfos {}
+pub struct GetSequencingInfos;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfosResponse {

@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, sync::Arc};
 
 use radius_sequencer_sdk::liveness_radius::publisher::Publisher;
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::Mutex;
 
 use crate::error::Error;
 
@@ -36,12 +36,10 @@ impl AppState {
         }
     }
 
-    pub async fn publishers(&self) -> MutexGuard<'_, BTreeMap<String, Arc<Publisher>>> {
-        self.inner.publishers.lock().await
-    }
-
     pub async fn get_publisher(&self, sequencing_info_key: &str) -> Result<Arc<Publisher>, Error> {
-        self.publishers()
+        self.inner
+            .publishers
+            .lock()
             .await
             .get(sequencing_info_key)
             .cloned()
@@ -49,7 +47,9 @@ impl AppState {
     }
 
     pub async fn add_publisher(&self, sequencing_info_key: String, publisher: Arc<Publisher>) {
-        self.publishers()
+        self.inner
+            .publishers
+            .lock()
             .await
             .insert(sequencing_info_key, publisher);
     }

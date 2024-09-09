@@ -90,7 +90,7 @@ impl GetSequencerRpcUrlListAtBlockHeight {
         let rpc_url_list: Vec<(Vec<u8>, Option<String>)> = sequencer_list
             .into_iter()
             .filter_map(|address| {
-                SequencerModel::get(address.as_slice())
+                SequencerNodeInfoModel::get(address.as_slice())
                     .ok()
                     .map(|sequencer| (address.to_vec(), sequencer.rpc_url))
             })

@@ -6,7 +6,7 @@ use tracing::info;
 
 use crate::{
     error::Error,
-    models::prelude::{SequencerModel, SequencingInfosModel},
+    models::prelude::{SequencerNodeInfoModel, SequencingInfosModel},
     rpc::prelude::*,
     sequencer_types::prelude::{sequencing_key, Platform, SequencingInfoPayload, ServiceProvider},
     state::AppState,
@@ -79,7 +79,7 @@ impl GetSequencerRpcUrl {
             _ => {}
         }
 
-        let rpc_url = SequencerModel::get(&parameter.message.address)?.rpc_url;
+        let rpc_url = SequencerNodeInfoModel::get(&parameter.message.address)?.rpc_url;
 
         Ok(GetSequencerRpcUrlResponse { rpc_url })
     }

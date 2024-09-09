@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::Error,
-    models::prelude::{RollupModel, SequencingInfosModel},
+    models::prelude::{RollupNodeInfoModel, SequencingInfosModel},
     sequencer_types::prelude::*,
     state::AppState,
     util::health_check,
@@ -74,18 +74,20 @@ impl AddRollup {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        match RollupModel::get(&parameter.message.address) {
+        match RollupNodeInfoModel::get(&parameter.message.address) {
             Ok(rollup) => {
                 tracing::warn!("Already added rollup: {:?}", rollup);
 
-                let rollup =
-                    RollupModel::new(parameter.message.address, Some(parameter.message.rpc_url));
+                let rollup = RollupNodeInfoModel::new(
+                    parameter.message.address,
+                    Some(parameter.message.rpc_url),
+                );
 
                 rollup.put()?;
             }
             Err(err) => {
                 if err.is_none_type() {
-                    let rollup = RollupModel::new(
+                    let rollup = RollupNodeInfoModel::new(
                         parameter.message.address,
                         Some(parameter.message.rpc_url),
                     );

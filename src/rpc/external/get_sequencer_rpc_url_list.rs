@@ -83,7 +83,7 @@ impl GetSequencerRpcUrlList {
             .sequencer_address_list
             .into_iter()
             .filter_map(|address| {
-                SequencerModel::get(&address)
+                SequencerNodeInfoModel::get(&address)
                     .ok()
                     .map(|sequencer| (address, sequencer.rpc_url))
             })

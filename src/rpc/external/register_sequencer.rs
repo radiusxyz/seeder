@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::Error,
-    models::prelude::{SequencerModel, SequencingInfosModel},
+    models::prelude::{SequencerNodeInfo, SequencerNodeInfoModel, SequencingInfosModel},
     sequencer_types::prelude::*,
     state::AppState,
     util::health_check,
@@ -83,19 +83,18 @@ impl RegisterSequencer {
         health_check(parameter.message.rpc_url.as_str()).await?;
 
         // put sequencer if not exists
-        match SequencerModel::get(&parameter.message.address) {
-            Ok(sequencer) => {
-                tracing::error!("Already registered sequencer: {:?}", sequencer);
+        match SequencerNodeInfoModel::get(&parameter.message.address) {
+            Ok(_sequencer_node_info) => {
                 return Err(Error::AlreadyRegisteredSequencer.into());
             }
             Err(err) => {
                 if err.is_none_type() {
-                    let sequencer = SequencerModel::new(
+                    let sequencer_node_info = SequencerNodeInfo::new(
                         parameter.message.address,
                         Some(parameter.message.rpc_url),
                     );
 
-                    sequencer.put()?;
+                    SequencerNodeInfoModel::update(&sequencer_node_info)?;
                 } else {
                     tracing::error!("Failed to add sequencer: {:?}", err);
                     return Err(err.into());

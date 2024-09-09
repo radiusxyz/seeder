@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::Error,
-    models::prelude::{SequencerModel, SequencingInfosModel},
+    models::prelude::{SequencerNodeInfoModel, SequencingInfosModel},
     sequencer_types::prelude::*,
     state::AppState,
 };
@@ -71,9 +71,9 @@ impl DeregisterSequencer {
         }
 
         // remove sequencer model
-        match SequencerModel::get(&parameter.message.address) {
-            Ok(sequencer) => {
-                sequencer.delete()?;
+        match SequencerNodeInfoModel::get_mut(&parameter.message.address) {
+            Ok(sequencer_node_info) => {
+                SequencerNodeInfoModel::delete(&sequencer_node_info)?;
             }
             Err(err) => {
                 if err.is_none_type() {
