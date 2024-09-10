@@ -38,8 +38,8 @@ impl SequencerNodeInfoModel {
         database()?.put(&key, sequencer_node_info)
     }
 
-    pub fn delete(sequencer_node_info: &SequencerNodeInfo) -> Result<(), DbError> {
-        let key = (Self::ID, &sequencer_node_info.sequencer_address);
+    pub fn delete(address: &[u8]) -> Result<(), DbError> {
+        let key = (Self::ID, address);
         database()?.delete(&key)
     }
 }

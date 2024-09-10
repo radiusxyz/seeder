@@ -65,19 +65,7 @@ impl DeregisterSequencer {
             _ => {}
         }
 
-        // remove sequencer model
-        match SequencerNodeInfoModel::get_mut(&parameter.message.address) {
-            Ok(sequencer_node_info) => {
-                SequencerNodeInfoModel::delete(&sequencer_node_info)?;
-            }
-            Err(err) => {
-                if err.is_none_type() {
-                    tracing::warn!("Already deregistered sequencer");
-                } else {
-                    return Err(err.into());
-                }
-            }
-        }
+        SequencerNodeInfoModel::delete(&parameter.message.address)?;
 
         Ok(())
     }
