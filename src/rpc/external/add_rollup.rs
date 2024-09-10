@@ -20,8 +20,8 @@ struct AddRollupMessage {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AddRollup {
-    signature: Signature,
     message: AddRollupMessage,
+    signature: Signature,
 }
 
 impl AddRollup {
@@ -37,7 +37,7 @@ impl AddRollup {
         //     parameter.message.chain_type,
         // )?;
 
-        let sequencing_key = sequencing_key(
+        let sequencing_key = (
             parameter.message.platform,
             parameter.message.service_provider,
         );

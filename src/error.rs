@@ -1,10 +1,10 @@
-pub use radius_sequencer_sdk::kvstore::KvStoreError as DbError;
+pub use radius_sequencer_sdk::kvstore::KvStoreError;
 
 pub enum Error {
     Boxed(Box<dyn std::error::Error>),
     OpenConfig(std::io::Error),
     ParseConfig(toml::de::Error),
-    Database(DbError),
+    Database(KvStoreError),
     JsonRPC(radius_sequencer_sdk::json_rpc::Error),
     SignatureMismatch,
 
@@ -129,8 +129,8 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-impl From<DbError> for Error {
-    fn from(value: DbError) -> Self {
+impl From<KvStoreError> for Error {
+    fn from(value: KvStoreError) -> Self {
         Self::Database(value)
     }
 }

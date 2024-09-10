@@ -3,14 +3,17 @@ use std::{collections::BTreeMap, sync::Arc};
 use radius_sequencer_sdk::liveness_radius::publisher::Publisher;
 use tokio::sync::Mutex;
 
-use crate::error::Error;
+use crate::{
+    error::Error,
+    types::prelude::{Platform, ServiceProvider},
+};
 
 pub struct AppState {
     inner: Arc<AppStateInner>,
 }
 
 struct AppStateInner {
-    publishers: Mutex<BTreeMap<String, Arc<Publisher>>>,
+    publishers: Mutex<BTreeMap<(Platform, ServiceProvider), Arc<Publisher>>>,
 }
 
 unsafe impl Send for AppState {}
@@ -26,7 +29,7 @@ impl Clone for AppState {
 }
 
 impl AppState {
-    pub fn new(publisher: BTreeMap<String, Arc<Publisher>>) -> Self {
+    pub fn new(publisher: BTreeMap<(Platform, ServiceProvider), Arc<Publisher>>) -> Self {
         let inner = AppStateInner {
             publishers: Mutex::new(publisher),
         };
@@ -36,7 +39,10 @@ impl AppState {
         }
     }
 
-    pub async fn get_publisher(&self, sequencing_info_key: &str) -> Result<Arc<Publisher>, Error> {
+    pub async fn get_publisher(
+        &self,
+        sequencing_info_key: &(Platform, ServiceProvider),
+    ) -> Result<Arc<Publisher>, Error> {
         self.inner
             .publishers
             .lock()
@@ -46,7 +52,11 @@ impl AppState {
             .ok_or(Error::FailedToGetPublisher)
     }
 
-    pub async fn add_publisher(&self, sequencing_info_key: String, publisher: Arc<Publisher>) {
+    pub async fn add_publisher(
+        &self,
+        sequencing_info_key: (Platform, ServiceProvider),
+        publisher: Arc<Publisher>,
+    ) {
         self.inner
             .publishers
             .lock()

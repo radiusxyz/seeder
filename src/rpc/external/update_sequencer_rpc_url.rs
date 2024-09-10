@@ -1,49 +1,34 @@
 use std::sync::Arc;
 
-use radius_sequencer_sdk::signature::{ChainType, Signature};
-use serde::{Deserialize, Serialize};
-use tracing::info;
-
-use crate::{
-    error::Error,
-    rpc::prelude::*,
-    state::AppState,
-    types::prelude::{
-        Platform, SequencerNodeInfoModel, SequencingInfoPayload, SequencingInfosModel,
-        ServiceProvider,
-    },
+use radius_sequencer_sdk::{
+    json_rpc::{types::RpcParameter, RpcError},
+    signature::{ChainType, Signature},
 };
+use serde::{Deserialize, Serialize};
+
+use crate::{error::Error, state::AppState, types::prelude::*, util::health_check};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct GetSequencerRpcUrlMessage {
-    address: Vec<u8>,
-    chain_type: ChainType,
+struct UpdateSequencerRpcUrlMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
+    chain_type: ChainType,
+    address: Vec<u8>,
+    rpc_url: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetSequencerRpcUrl {
-    message: GetSequencerRpcUrlMessage,
+pub struct UpdateSequencerRpcUrl {
+    message: UpdateSequencerRpcUrlMessage,
     signature: Signature,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetSequencerRpcUrlResponse {
-    pub rpc_url: Option<String>,
-}
+impl UpdateSequencerRpcUrl {
+    pub const METHOD_NAME: &'static str = "update_sequencer_rpc_url";
 
-impl GetSequencerRpcUrl {
-    pub const METHOD_NAME: &'static str = "get_sequencer_rpc_url";
-
-    pub async fn handler(
-        parameter: RpcParameter,
-        context: Arc<AppState>,
-    ) -> Result<GetSequencerRpcUrlResponse, RpcError> {
-        let parameter = parameter.parse::<GetSequencerRpcUrl>()?;
-
-        info!("get_sequencer_rpc_url: {:?}", parameter.message.address);
+    pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
+        let parameter = parameter.parse::<UpdateSequencerRpcUrl>()?;
 
         // // verify siganture
         // parameter.signature.verify_signature(
@@ -81,8 +66,15 @@ impl GetSequencerRpcUrl {
             _ => {}
         }
 
-        let rpc_url = SequencerNodeInfoModel::get(&parameter.message.address)?.rpc_url;
+        // health check
+        health_check(parameter.message.rpc_url.as_str()).await?;
 
-        Ok(GetSequencerRpcUrlResponse { rpc_url })
+        // update rpc url
+        SequencerNodeInfoModel::apply(&parameter.message.address, |sequencer_node_info| {
+            sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
+            Ok(())
+        })?;
+
+        Ok(())
     }
 }

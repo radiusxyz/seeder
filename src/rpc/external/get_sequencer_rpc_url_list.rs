@@ -17,8 +17,8 @@ struct GetSequencerRpcUrlListMessage {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlList {
-    signature: Signature,
     message: GetSequencerRpcUrlListMessage,
+    signature: Signature,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -47,7 +47,7 @@ impl GetSequencerRpcUrlList {
         //     parameter.message.chain_type,
         // )?;
 
-        let sequencing_key = sequencing_key(
+        let sequencing_key = (
             parameter.message.platform,
             parameter.message.service_provider,
         );

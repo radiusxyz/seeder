@@ -8,8 +8,8 @@ use crate::{
     rpc::prelude::*,
     state::AppState,
     types::prelude::{
-        sequencing_key, LivenessEthereum, LivenessLocal, Platform, SequencingInfoPayload,
-        SequencingInfosModel, ServiceProvider,
+        LivenessEthereum, LivenessLocal, Platform, SequencingInfoPayload, SequencingInfosModel,
+        ServiceProvider,
     },
 };
 
@@ -67,7 +67,8 @@ impl AddSequencingInfo {
 
         let mut sequencing_infos = SequencingInfosModel::get_mut()?;
 
-        let sequencing_key = sequencing_key(parameter.platform, parameter.service_provider);
+        let sequencing_key = (parameter.platform, parameter.service_provider);
+
         if sequencing_infos
             .sequencing_infos()
             .get(&sequencing_key)

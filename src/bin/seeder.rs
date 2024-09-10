@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, sync::Arc};
 
 use radius_sequencer_sdk::{
-    json_rpc::RpcServer, kvstore::KvStore as Database, liveness_radius::publisher::Publisher,
+    json_rpc::RpcServer, kvstore::KvStore, liveness_radius::publisher::Publisher,
 };
 use seeder::{error::Error, rpc::methods::*, state::AppState, types::prelude::*};
 use tracing::info;
@@ -22,7 +22,7 @@ async fn main() -> Result<(), Error> {
             let seeder_rpc_url = config.seeder_rpc_url();
 
             // Initialize a local database.
-            Database::new(config.path().join(DATABASE_DIR_NAME))?.init();
+            KvStore::new(config.path().join(DATABASE_DIR_NAME))?.init();
 
             let app_state = initialize_app_state().await?;
 
@@ -45,6 +45,11 @@ async fn main() -> Result<(), Error> {
                     GetSequencerRpcUrlListAtBlockHeight::handler,
                 )?
                 .register_rpc_method(RegisterSequencer::METHOD_NAME, RegisterSequencer::handler)?
+                .register_rpc_method(
+                    UpdateSequencerRpcUrl::METHOD_NAME,
+                    UpdateSequencerRpcUrl::handler,
+                )?
+                .register_rpc_method(UpdateRollupRpcUrl::METHOD_NAME, UpdateRollupRpcUrl::handler)?
                 .register_rpc_method(AddSequencingInfo::METHOD_NAME, AddSequencingInfo::handler)?
                 .register_rpc_method(GetSequencingInfo::METHOD_NAME, GetSequencingInfo::handler)?
                 .register_rpc_method(GetSequencingInfos::METHOD_NAME, GetSequencingInfos::handler)?
@@ -63,7 +68,6 @@ async fn initialize_app_state() -> Result<AppState, Error> {
     // init app state
     let app_state = AppState::new(BTreeMap::new());
 
-    // get or init
     let sequencing_infos = SequencingInfosModel::get_mut_or_default()?;
 
     for (key, sequencing_info_payload) in sequencing_infos.sequencing_infos() {
@@ -82,7 +86,7 @@ async fn initialize_app_state() -> Result<AppState, Error> {
                 .map_err(Error::InitializePublisher)?;
 
                 app_state
-                    .add_publisher(key.to_string(), Arc::new(publisher))
+                    .add_publisher(key.clone(), Arc::new(publisher))
                     .await;
             }
             _ => {}

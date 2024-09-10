@@ -6,9 +6,7 @@ use crate::{
     error::Error,
     rpc::prelude::*,
     state::AppState,
-    types::prelude::{
-        sequencing_key, Platform, SequencingInfoPayload, SequencingInfosModel, ServiceProvider,
-    },
+    types::prelude::{Platform, SequencingInfoPayload, SequencingInfosModel, ServiceProvider},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -30,7 +28,7 @@ impl GetSequencingInfo {
         _context: Arc<AppState>,
     ) -> Result<GetSequencingInfoResponse, RpcError> {
         let parameter = parameter.parse::<GetSequencingInfo>()?;
-        let sequencing_key = sequencing_key(parameter.platform, parameter.service_provider);
+        let sequencing_key = (parameter.platform, parameter.service_provider);
 
         let sequencing_info_payload = SequencingInfosModel::get()?
             .sequencing_infos()

@@ -10,17 +10,17 @@ use crate::{error::Error, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterSequencerMessage {
-    address: Vec<u8>,
-    chain_type: ChainType,
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
+    chain_type: ChainType,
+    address: Vec<u8>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DeregisterSequencer {
-    signature: Signature,
     message: DeregisterSequencerMessage,
+    signature: Signature,
 }
 
 impl DeregisterSequencer {
@@ -36,7 +36,7 @@ impl DeregisterSequencer {
         //     parameter.message.chain_type,
         // )?;
 
-        let sequencing_key = sequencing_key(
+        let sequencing_key = (
             parameter.message.platform,
             parameter.message.service_provider,
         );

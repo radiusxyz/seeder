@@ -10,18 +10,18 @@ use crate::{error::Error, state::AppState, types::prelude::*, util::health_check
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct RegisterSequencerMessage {
-    address: Vec<u8>,
-    chain_type: ChainType,
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
+    chain_type: ChainType,
+    address: Vec<u8>,
     rpc_url: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct RegisterSequencer {
-    signature: Signature,
     message: RegisterSequencerMessage,
+    signature: Signature,
 }
 
 impl RegisterSequencer {
@@ -37,15 +37,9 @@ impl RegisterSequencer {
         //     parameter.message.chain_type,
         // )?;
 
-        let sequencing_key = sequencing_key(
+        let sequencing_key = (
             parameter.message.platform,
             parameter.message.service_provider,
-        );
-
-        tracing::info!(
-            "register_sequencer: {:?}, sequencing_key: {}",
-            parameter.message.address,
-            sequencing_key
         );
 
         let sequencing_info = SequencingInfosModel::get()?;

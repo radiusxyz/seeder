@@ -3,14 +3,9 @@ use std::sync::Arc;
 use crate::{rpc::prelude::*, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct GetClusterInfoMessage {
+pub struct GetClusterInfo {
     sequencer_address_list: Vec<Vec<u8>>,
     rollup_address_list: Vec<Vec<u8>>,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetClusterInfo {
-    message: GetClusterInfoMessage,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -29,7 +24,6 @@ impl GetClusterInfo {
         let parameter = parameter.parse::<GetClusterInfo>()?;
 
         let sequencer_rpc_url_list: Vec<(Vec<u8>, Option<String>)> = parameter
-            .message
             .sequencer_address_list
             .into_iter()
             .filter_map(|address| {
@@ -40,7 +34,6 @@ impl GetClusterInfo {
             .collect();
 
         let rollup_rpc_url_list: Vec<(Vec<u8>, Option<String>)> = parameter
-            .message
             .rollup_address_list
             .into_iter()
             .filter_map(|address| {

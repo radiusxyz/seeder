@@ -1,11 +1,11 @@
-use std::{collections::BTreeMap, sync::Arc};
+use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
 use crate::{
     rpc::prelude::*,
     state::AppState,
-    types::prelude::{SequencingInfoPayload, SequencingInfosModel},
+    types::prelude::{Platform, SequencingInfoPayload, SequencingInfosModel, ServiceProvider},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -13,7 +13,7 @@ pub struct GetSequencingInfos;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfosResponse {
-    sequencing_infos: BTreeMap<String, SequencingInfoPayload>,
+    sequencing_infos: Vec<((Platform, ServiceProvider), SequencingInfoPayload)>,
 }
 
 impl GetSequencingInfos {
@@ -23,7 +23,11 @@ impl GetSequencingInfos {
         _parameter: RpcParameter,
         _context: Arc<AppState>,
     ) -> Result<GetSequencingInfosResponse, RpcError> {
-        let sequencing_infos = SequencingInfosModel::get()?.sequencing_infos().clone();
+        let sequencing_infos = SequencingInfosModel::get()?
+            .sequencing_infos()
+            .iter()
+            .map(|(k, v)| (*k, v.clone()))
+            .collect();
 
         Ok(GetSequencingInfosResponse { sequencing_infos })
     }
