@@ -6,10 +6,12 @@ use tracing::info;
 
 use crate::{
     error::Error,
-    models::prelude::{SequencerNodeInfoModel, SequencingInfosModel},
     rpc::prelude::*,
-    sequencer_types::prelude::{sequencing_key, Platform, SequencingInfoPayload, ServiceProvider},
     state::AppState,
+    types::prelude::{
+        sequencing_key, Platform, SequencerNodeInfoModel, SequencingInfoPayload,
+        SequencingInfosModel, ServiceProvider,
+    },
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

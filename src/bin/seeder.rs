@@ -3,14 +3,7 @@ use std::{collections::BTreeMap, sync::Arc};
 use radius_sequencer_sdk::{
     json_rpc::RpcServer, kvstore::KvStore as Database, liveness_radius::publisher::Publisher,
 };
-use seeder::{
-    cli::{Cli, Commands, Config, ConfigPath, DATABASE_DIR_NAME},
-    error::Error,
-    models::prelude::SequencingInfosModel,
-    rpc::methods::*,
-    sequencer_types::prelude::SequencingInfoPayload,
-    state::AppState,
-};
+use seeder::{error::Error, rpc::methods::*, state::AppState, types::prelude::*};
 use tracing::info;
 
 #[tokio::main]
@@ -71,8 +64,7 @@ async fn initialize_app_state() -> Result<AppState, Error> {
     let app_state = AppState::new(BTreeMap::new());
 
     // get or init
-    let sequencing_infos = SequencingInfosModel::get_or_default()?;
-    sequencing_infos.put()?;
+    let sequencing_infos = SequencingInfosModel::get_mut_or_default()?;
 
     for (key, sequencing_info_payload) in sequencing_infos.sequencing_infos() {
         match sequencing_info_payload {

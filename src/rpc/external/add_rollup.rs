@@ -6,13 +6,7 @@ use radius_sequencer_sdk::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    error::Error,
-    models::prelude::{RollupNodeInfoModel, SequencingInfosModel},
-    sequencer_types::prelude::*,
-    state::AppState,
-    util::health_check,
-};
+use crate::{error::Error, state::AppState, types::prelude::*, util::health_check};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct AddRollupMessage {
@@ -74,28 +68,21 @@ impl AddRollup {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        match RollupNodeInfoModel::get(&parameter.message.address) {
-            Ok(rollup) => {
-                tracing::warn!("Already added rollup: {:?}", rollup);
-
-                let rollup = RollupNodeInfoModel::new(
-                    parameter.message.address,
-                    Some(parameter.message.rpc_url),
-                );
-
-                rollup.put()?;
+        match RollupNodeInfoModel::get_mut(&parameter.message.address) {
+            Ok(_rollup_node_info) => {
+                return Err(Error::AlreadyRegisteredRollup.into());
             }
-            Err(err) => {
-                if err.is_none_type() {
-                    let rollup = RollupNodeInfoModel::new(
-                        parameter.message.address,
+            Err(error) => {
+                if error.is_none_type() {
+                    let rollup_node_info = RollupNodeInfo::new(
+                        parameter.message.address.clone(),
                         Some(parameter.message.rpc_url),
                     );
 
-                    rollup.put()?;
+                    RollupNodeInfoModel::put(&rollup_node_info)?;
                 } else {
-                    tracing::error!("Failed to add rollup: {:?}", err);
-                    return Err(err.into());
+                    tracing::error!("Failed to add rollup: {:?}", error);
+                    return Err(error.into());
                 }
             }
         };

@@ -1,11 +1,6 @@
 use std::sync::Arc;
 
-use radius_sequencer_sdk::signature::{ChainType, Signature};
-use tracing::info;
-
-use crate::{
-    error::Error, models::prelude::*, rpc::prelude::*, sequencer_types::prelude::*, state::AppState,
-};
+use crate::{rpc::prelude::*, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetClusterInfoMessage {
@@ -15,7 +10,6 @@ struct GetClusterInfoMessage {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetClusterInfo {
-    signature: Signature,
     message: GetClusterInfoMessage,
 }
 

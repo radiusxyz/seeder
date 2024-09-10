@@ -3,8 +3,9 @@ use std::{collections::BTreeMap, sync::Arc};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    models::prelude::SequencingInfosModel, rpc::prelude::*,
-    sequencer_types::prelude::SequencingInfoPayload, state::AppState,
+    rpc::prelude::*,
+    state::AppState,
+    types::prelude::{SequencingInfoPayload, SequencingInfosModel},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

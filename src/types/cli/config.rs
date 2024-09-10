@@ -2,8 +2,10 @@ use std::{fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use super::{ConfigOption, ConfigPath, CONFIG_FILE_NAME};
-use crate::error::Error;
+use crate::{
+    error::Error,
+    types::cli::{ConfigOption, ConfigPath, CONFIG_FILE_NAME},
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Config {

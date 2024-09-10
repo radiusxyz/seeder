@@ -3,10 +3,10 @@ mod config_option;
 mod config_path;
 
 use clap::{Parser, Subcommand};
-pub use config::Config;
+pub use config::*;
 pub use config_option::ConfigOption;
 pub use config_path::ConfigPath;
-pub use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 pub const DEFAULT_HOME_PATH: &str = ".radius";
 pub const DATABASE_DIR_NAME: &str = "database";

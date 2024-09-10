@@ -6,12 +6,7 @@ use radius_sequencer_sdk::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    error::Error,
-    models::prelude::{SequencerNodeInfoModel, SequencingInfosModel},
-    sequencer_types::prelude::*,
-    state::AppState,
-};
+use crate::{error::Error, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterSequencerMessage {

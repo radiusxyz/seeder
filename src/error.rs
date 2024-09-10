@@ -33,6 +33,7 @@ pub enum Error {
 
     AlreadyRegisteredCluster,
     AlreadyRegisteredSequencer,
+    AlreadyRegisteredRollup,
 
     InvalidURL(reqwest::Error),
     PortConnection(reqwest::Error),
@@ -76,6 +77,9 @@ impl std::fmt::Display for Error {
             }
             Self::AlreadyRegisteredSequencer => {
                 write!(f, "Sequencer already registered")
+            }
+            Self::AlreadyRegisteredRollup => {
+                write!(f, "Rollup already registered")
             }
             Self::SequencerNotRegistered => {
                 write!(f, "Sequencer not found in the cluster")

@@ -2,18 +2,11 @@ use std::sync::Arc;
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
-    // liveness::types::Address,
     signature::{ChainType, Signature},
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    error::Error,
-    models::prelude::{SequencerNodeInfo, SequencerNodeInfoModel, SequencingInfosModel},
-    sequencer_types::prelude::*,
-    state::AppState,
-    util::health_check,
-};
+use crate::{error::Error, state::AppState, types::prelude::*, util::health_check};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct RegisterSequencerMessage {
@@ -83,18 +76,18 @@ impl RegisterSequencer {
         health_check(parameter.message.rpc_url.as_str()).await?;
 
         // put sequencer if not exists
-        match SequencerNodeInfoModel::get(&parameter.message.address) {
+        match SequencerNodeInfoModel::get_mut(&parameter.message.address) {
             Ok(_sequencer_node_info) => {
                 return Err(Error::AlreadyRegisteredSequencer.into());
             }
             Err(err) => {
                 if err.is_none_type() {
                     let sequencer_node_info = SequencerNodeInfo::new(
-                        parameter.message.address,
+                        parameter.message.address.clone(),
                         Some(parameter.message.rpc_url),
                     );
 
-                    SequencerNodeInfoModel::update(&sequencer_node_info)?;
+                    SequencerNodeInfoModel::put(&sequencer_node_info)?;
                 } else {
                     tracing::error!("Failed to add sequencer: {:?}", err);
                     return Err(err.into());

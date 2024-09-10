@@ -1,7 +1,5 @@
-mod add_sequencing_info;
-mod get_sequencing_info;
-mod get_sequencing_infos;
+pub mod add_sequencing_info;
+pub mod debug;
 
 pub use add_sequencing_info::*;
-pub use get_sequencing_info::*;
-pub use get_sequencing_infos::*;
+pub use debug::{get_sequencing_info::*, get_sequencing_infos::*};

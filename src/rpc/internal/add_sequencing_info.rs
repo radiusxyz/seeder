@@ -5,13 +5,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::Error,
-    models::prelude::SequencingInfosModel,
     rpc::prelude::*,
-    sequencer_types::prelude::{
-        sequencing_key, LivenessEthereum, LivenessLocal, Platform, SequencingInfoPayload,
-        ServiceProvider,
-    },
     state::AppState,
+    types::prelude::{
+        sequencing_key, LivenessEthereum, LivenessLocal, Platform, SequencingInfoPayload,
+        SequencingInfosModel, ServiceProvider,
+    },
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

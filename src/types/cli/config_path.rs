@@ -7,8 +7,8 @@ use clap::Parser;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    cli::{ConfigOption, CONFIG_FILE_NAME},
     error::Error,
+    types::cli::{config_option::ConfigOption, CONFIG_FILE_NAME, DEFAULT_HOME_PATH},
 };
 
 #[derive(Debug, Deserialize, Parser, Serialize)]
@@ -33,7 +33,7 @@ impl AsRef<Path> for ConfigPath {
 impl Default for ConfigPath {
     fn default() -> Self {
         let path = PathBuf::from(env::var("HOME").unwrap())
-            .join(super::DEFAULT_HOME_PATH)
+            .join(DEFAULT_HOME_PATH)
             .to_str()
             .unwrap()
             .to_string();

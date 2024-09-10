@@ -3,9 +3,7 @@ use std::sync::Arc;
 use radius_sequencer_sdk::signature::{ChainType, Signature};
 use tracing::info;
 
-use crate::{
-    error::Error, models::prelude::*, rpc::prelude::*, sequencer_types::prelude::*, state::AppState,
-};
+use crate::{error::Error, rpc::prelude::*, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetSequencerRpcUrlListMessage {
