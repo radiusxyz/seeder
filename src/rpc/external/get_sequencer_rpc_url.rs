@@ -11,7 +11,7 @@ pub struct GetSequencerRpcUrl {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlResponse {
-    pub rpc_url: Option<String>,
+    pub sequencer_rpc_url: Option<String>,
 }
 
 impl GetSequencerRpcUrl {
@@ -23,8 +23,8 @@ impl GetSequencerRpcUrl {
     ) -> Result<GetSequencerRpcUrlResponse, RpcError> {
         let parameter = parameter.parse::<GetSequencerRpcUrl>()?;
 
-        let rpc_url = SequencerNodeInfoModel::get(&parameter.address)?.rpc_url;
+        let sequencer_rpc_url = SequencerNodeInfoModel::get(&parameter.address)?.rpc_url;
 
-        Ok(GetSequencerRpcUrlResponse { rpc_url })
+        Ok(GetSequencerRpcUrlResponse { sequencer_rpc_url })
     }
 }

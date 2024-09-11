@@ -9,7 +9,7 @@ pub struct GetSequencerRpcUrlList {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlListResponse {
-    pub rpc_url_list: Vec<(String, Option<String>)>,
+    pub sequencer_rpc_url_list: Vec<(String, Option<String>)>,
 }
 
 impl GetSequencerRpcUrlList {
@@ -21,7 +21,7 @@ impl GetSequencerRpcUrlList {
     ) -> Result<GetSequencerRpcUrlListResponse, RpcError> {
         let parameter = parameter.parse::<GetSequencerRpcUrlList>()?;
 
-        let rpc_url_list: Vec<(String, Option<String>)> = parameter
+        let sequencer_rpc_url_list: Vec<(String, Option<String>)> = parameter
             .sequencer_address_list
             .into_iter()
             .filter_map(|address| {
@@ -31,6 +31,8 @@ impl GetSequencerRpcUrlList {
             })
             .collect();
 
-        Ok(GetSequencerRpcUrlListResponse { rpc_url_list })
+        Ok(GetSequencerRpcUrlListResponse {
+            sequencer_rpc_url_list,
+        })
     }
 }

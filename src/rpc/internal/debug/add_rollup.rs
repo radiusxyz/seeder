@@ -48,6 +48,8 @@ impl AddRollup {
             .get(&sequencing_key)
             .ok_or(Error::FailedToGetSequencingInfo)?;
 
+        let parameter_address = parameter.message.address.to_lowercase();
+
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(_payload) => {
                 let publisher = context.get_publisher(&sequencing_key).await?;
@@ -58,9 +60,9 @@ impl AddRollup {
                     .await?;
 
                 // check if the sequencer is registered in the contract
-                sequencer_list.iter().find(|&address| {
-                    address.to_string().to_lowercase() == parameter.message.address.to_lowercase()
-                });
+                sequencer_list
+                    .iter()
+                    .find(|&address| address.to_string().to_lowercase() == parameter_address);
             }
             _ => {}
         }
@@ -68,7 +70,7 @@ impl AddRollup {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        match RollupNodeInfoModel::get_mut(&parameter.message.address.to_lowercase()) {
+        match RollupNodeInfoModel::get_mut(&parameter_address) {
             Ok(mut rollup_node_info) => {
                 rollup_node_info.rpc_url = Some(parameter.message.rpc_url);
 
@@ -77,7 +79,7 @@ impl AddRollup {
             Err(error) => {
                 if error.is_none_type() {
                     let rollup_node_info = RollupNodeInfo::new(
-                        parameter.message.address.to_lowercase().clone(),
+                        parameter_address.clone(),
                         Some(parameter.message.rpc_url),
                     );
 
