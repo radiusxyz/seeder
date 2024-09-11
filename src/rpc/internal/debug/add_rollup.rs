@@ -68,7 +68,7 @@ impl AddRollup {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        match RollupNodeInfoModel::get_mut(&parameter.message.address) {
+        match RollupNodeInfoModel::get_mut(&parameter.message.address.to_lowercase()) {
             Ok(mut rollup_node_info) => {
                 rollup_node_info.rpc_url = Some(parameter.message.rpc_url);
 
@@ -77,7 +77,7 @@ impl AddRollup {
             Err(error) => {
                 if error.is_none_type() {
                     let rollup_node_info = RollupNodeInfo::new(
-                        parameter.message.address.clone(),
+                        parameter.message.address.to_lowercase().clone(),
                         Some(parameter.message.rpc_url),
                     );
 

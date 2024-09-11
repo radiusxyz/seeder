@@ -68,7 +68,7 @@ impl DeregisterSequencer {
             _ => {}
         }
 
-        SequencerNodeInfoModel::delete(&parameter.message.address)?;
+        SequencerNodeInfoModel::delete(&parameter.message.address.to_lowercase())?;
 
         Ok(())
     }

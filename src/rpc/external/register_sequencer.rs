@@ -60,7 +60,10 @@ impl RegisterSequencer {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address.to_string() == parameter.message.address)
+                    .find(|&address| {
+                        address.to_string().to_lowercase()
+                            == parameter.message.address.to_lowercase()
+                    })
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
@@ -69,7 +72,7 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        match SequencerNodeInfoModel::get_mut(&parameter.message.address) {
+        match SequencerNodeInfoModel::get_mut(&parameter.message.address.to_lowercase()) {
             Ok(mut sequencer_node_info) => {
                 sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
 
@@ -78,7 +81,7 @@ impl RegisterSequencer {
             Err(err) => {
                 if err.is_none_type() {
                     let sequencer_node_info = SequencerNodeInfo::new(
-                        parameter.message.address.clone(),
+                        parameter.message.address.to_lowercase().clone(),
                         Some(parameter.message.rpc_url),
                     );
 
