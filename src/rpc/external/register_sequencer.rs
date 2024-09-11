@@ -71,7 +71,10 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        let sequencer_node_info = SequencerNodeInfoModel::get_mut_or_default(&parameter_address)?;
+        let mut sequencer_node_info =
+            SequencerNodeInfoModel::get_mut_or_default(&parameter_address)?;
+        sequencer_node_info.sequencer_address = parameter.message.address.to_lowercase();
+        sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
         sequencer_node_info.update()?;
 
         Ok(())
