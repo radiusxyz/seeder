@@ -58,9 +58,9 @@ impl AddRollup {
                     .await?;
 
                 // check if the sequencer is registered in the contract
-                sequencer_list
-                    .iter()
-                    .find(|&address| address.to_string() == parameter.message.address);
+                sequencer_list.iter().find(|&address| {
+                    address.to_string().to_lowercase() == parameter.message.address.to_lowercase()
+                });
             }
             _ => {}
         }

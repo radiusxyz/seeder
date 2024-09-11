@@ -59,7 +59,10 @@ impl DeregisterSequencer {
                 // check if the sequencer is deregistered from the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| address.to_string() == parameter.message.address)
+                    .find(|&&address| {
+                        address.to_string().to_lowercase()
+                            == parameter.message.address.to_lowercase()
+                    })
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
             _ => {}

@@ -71,7 +71,10 @@ impl GetSequencerRpcUrlListAtBlockHeight {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address.to_string() == parameter.message.address)
+                    .find(|&address| {
+                        address.to_string().to_lowercase()
+                            == parameter.message.address.to_lowercase()
+                    })
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
@@ -88,7 +91,7 @@ impl GetSequencerRpcUrlListAtBlockHeight {
         let rpc_url_list: Vec<(String, Option<String>)> = sequencer_list
             .into_iter()
             .filter_map(|address| {
-                let address = address.to_string();
+                let address = address.to_string().to_lowercase();
                 SequencerNodeInfoModel::get(&address)
                     .ok()
                     .map(|sequencer| (address, sequencer.rpc_url))
