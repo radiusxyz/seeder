@@ -84,9 +84,7 @@ async fn initialize_app_state() -> Result<AppState, Error> {
                 )
                 .map_err(Error::InitializePublisher)?;
 
-                app_state
-                    .add_publisher(key.clone(), Arc::new(publisher))
-                    .await;
+                app_state.add_publisher(*key, Arc::new(publisher)).await;
             }
             _ => {}
         }

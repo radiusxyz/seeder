@@ -25,9 +25,9 @@ impl GetSequencerRpcUrlList {
             .sequencer_address_list
             .into_iter()
             .filter_map(|address| {
-                SequencerNodeInfoModel::get(&address)
+                SequencerNodeInfoModel::get(&address.to_lowercase())
                     .ok()
-                    .map(|sequencer| (address, sequencer.rpc_url))
+                    .map(|sequencer| (address.to_lowercase(), sequencer.rpc_url))
             })
             .collect();
 

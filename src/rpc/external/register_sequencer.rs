@@ -42,6 +42,8 @@ impl RegisterSequencer {
             parameter.message.service_provider,
         );
 
+        let parameter_address = parameter.message.address.to_lowercase();
+
         let sequencing_info = SequencingInfosModel::get()?;
         let sequencing_info_payload = sequencing_info
             .sequencing_infos()
@@ -60,10 +62,7 @@ impl RegisterSequencer {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| {
-                        address.to_string().to_lowercase()
-                            == parameter.message.address.to_lowercase()
-                    })
+                    .find(|&address| address.to_string().to_lowercase() == parameter_address)
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
@@ -72,26 +71,8 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        match SequencerNodeInfoModel::get_mut(&parameter.message.address.to_lowercase()) {
-            Ok(mut sequencer_node_info) => {
-                sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
-
-                sequencer_node_info.update()?;
-            }
-            Err(err) => {
-                if err.is_none_type() {
-                    let sequencer_node_info = SequencerNodeInfo::new(
-                        parameter.message.address.to_lowercase().clone(),
-                        Some(parameter.message.rpc_url),
-                    );
-
-                    SequencerNodeInfoModel::put(&sequencer_node_info)?;
-                } else {
-                    tracing::error!("Failed to add sequencer: {:?}", err);
-                    return Err(err.into());
-                }
-            }
-        };
+        let sequencer_node_info = SequencerNodeInfoModel::get_mut_or_default(&parameter_address)?;
+        sequencer_node_info.update()?;
 
         Ok(())
     }
