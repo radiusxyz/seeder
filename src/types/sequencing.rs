@@ -62,11 +62,6 @@ impl SequencingInfosModel {
         kvstore()?.get(&key)
     }
 
-    pub fn get_or_default() -> Result<SequencingInfos, KvStoreError> {
-        let key = Self::ID;
-        kvstore()?.get_or_default(&key)
-    }
-
     pub fn get_mut() -> Result<Lock<'static, SequencingInfos>, KvStoreError> {
         let key = Self::ID;
         kvstore()?.get_mut(&key)

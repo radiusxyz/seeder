@@ -1,5 +1,6 @@
 use std::{collections::BTreeMap, sync::Arc};
 
+use debug::AddRollup;
 use radius_sequencer_sdk::{
     json_rpc::RpcServer, kvstore::KvStore, liveness_radius::publisher::Publisher,
 };

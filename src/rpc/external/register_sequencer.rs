@@ -32,7 +32,7 @@ impl RegisterSequencer {
 
         // // verify siganture
         // parameter.signature.verify_signature(
-        //     rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
+        //     crate::rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
         //     parameter.message.address.as_slice(),
         //     parameter.message.chain_type,
         // )?;
@@ -69,10 +69,11 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        // put sequencer if not exists
         match SequencerNodeInfoModel::get_mut(&parameter.message.address) {
-            Ok(_sequencer_node_info) => {
-                return Err(Error::AlreadyRegisteredSequencer.into());
+            Ok(mut sequencer_node_info) => {
+                sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
+
+                sequencer_node_info.update()?;
             }
             Err(err) => {
                 if err.is_none_type() {

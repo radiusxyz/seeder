@@ -69,8 +69,10 @@ impl AddRollup {
         health_check(parameter.message.rpc_url.as_str()).await?;
 
         match RollupNodeInfoModel::get_mut(&parameter.message.address) {
-            Ok(_rollup_node_info) => {
-                return Err(Error::AlreadyRegisteredRollup.into());
+            Ok(mut rollup_node_info) => {
+                rollup_node_info.rpc_url = Some(parameter.message.rpc_url);
+
+                rollup_node_info.update()?;
             }
             Err(error) => {
                 if error.is_none_type() {

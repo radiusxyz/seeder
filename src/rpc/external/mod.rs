@@ -1,4 +1,3 @@
-mod add_rollup;
 mod deregister_sequencer;
 mod get_cluster_info;
 mod get_sequencer_rpc_url;
@@ -8,7 +7,6 @@ mod register_sequencer;
 mod update_rollup_rpc_url;
 mod update_sequencer_rpc_url;
 
-pub use add_rollup::*;
 pub use deregister_sequencer::*;
 pub use get_cluster_info::*;
 pub use get_sequencer_rpc_url::*;
