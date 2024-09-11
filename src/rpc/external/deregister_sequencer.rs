@@ -14,7 +14,7 @@ struct DeregisterSequencerMessage {
     service_provider: ServiceProvider,
     cluster_id: String,
     chain_type: ChainType,
-    address: Vec<u8>,
+    address: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -59,7 +59,7 @@ impl DeregisterSequencer {
                 // check if the sequencer is deregistered from the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| address.as_slice() == parameter.message.address)
+                    .find(|&&address| address.to_string() == parameter.message.address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
             _ => {}

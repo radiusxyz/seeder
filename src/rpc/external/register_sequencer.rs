@@ -14,7 +14,7 @@ struct RegisterSequencerMessage {
     service_provider: ServiceProvider,
     cluster_id: String,
     chain_type: ChainType,
-    address: Vec<u8>,
+    address: String,
     rpc_url: String,
 }
 
@@ -60,7 +60,7 @@ impl RegisterSequencer {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address.as_slice() == parameter.message.address)
+                    .find(|&address| address.to_string() == parameter.message.address)
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}

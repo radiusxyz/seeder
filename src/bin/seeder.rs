@@ -35,7 +35,10 @@ async fn main() -> Result<(), Error> {
                     DeregisterSequencer::METHOD_NAME,
                     DeregisterSequencer::handler,
                 )?
-                .register_rpc_method(GetClusterInfo::METHOD_NAME, GetClusterInfo::handler)?
+                .register_rpc_method(
+                    GetExecutorRpcUrlList::METHOD_NAME,
+                    GetExecutorRpcUrlList::handler,
+                )?
                 .register_rpc_method(GetSequencerRpcUrl::METHOD_NAME, GetSequencerRpcUrl::handler)?
                 .register_rpc_method(
                     GetSequencerRpcUrlList::METHOD_NAME,
@@ -46,11 +49,6 @@ async fn main() -> Result<(), Error> {
                     GetSequencerRpcUrlListAtBlockHeight::handler,
                 )?
                 .register_rpc_method(RegisterSequencer::METHOD_NAME, RegisterSequencer::handler)?
-                .register_rpc_method(
-                    UpdateSequencerRpcUrl::METHOD_NAME,
-                    UpdateSequencerRpcUrl::handler,
-                )?
-                .register_rpc_method(UpdateRollupRpcUrl::METHOD_NAME, UpdateRollupRpcUrl::handler)?
                 .register_rpc_method(AddSequencingInfo::METHOD_NAME, AddSequencingInfo::handler)?
                 .register_rpc_method(GetSequencingInfo::METHOD_NAME, GetSequencingInfo::handler)?
                 .register_rpc_method(GetSequencingInfos::METHOD_NAME, GetSequencingInfos::handler)?

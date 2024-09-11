@@ -10,7 +10,7 @@ use crate::{error::Error, state::AppState, types::prelude::*, util::health_check
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct AddRollupMessage {
-    address: Vec<u8>,
+    address: String,
     chain_type: ChainType,
     platform: Platform,
     service_provider: ServiceProvider,
@@ -60,7 +60,7 @@ impl AddRollup {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address.as_slice() == parameter.message.address);
+                    .find(|&address| address.to_string() == parameter.message.address);
             }
             _ => {}
         }
