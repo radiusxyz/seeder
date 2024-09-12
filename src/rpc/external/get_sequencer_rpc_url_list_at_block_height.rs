@@ -3,7 +3,7 @@ use std::sync::Arc;
 use radius_sequencer_sdk::signature::{ChainType, Signature};
 use tracing::info;
 
-use crate::{error::Error, rpc::prelude::*, state::AppState, types::prelude::*};
+use crate::{address::Address, error::Error, rpc::prelude::*, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetSequencerRpcUrlListAtBlockHeigthMessage {
@@ -23,7 +23,7 @@ pub struct GetSequencerRpcUrlListAtBlockHeight {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlListAtBlockHeighResponse {
-    pub rpc_url_list: Vec<(String, Option<String>)>,
+    pub rpc_url_list: Vec<(Address, Option<String>)>,
     pub block_height: u64,
 }
 
@@ -88,13 +88,12 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             )
             .await?;
 
-        let rpc_url_list: Vec<(String, Option<String>)> = sequencer_list
+        let rpc_url_list: Vec<(Address, Option<String>)> = sequencer_list
             .into_iter()
             .filter_map(|address| {
-                let address = address.to_string().to_lowercase();
-                SequencerNodeInfoModel::get(&address)
+                SequencerNodeInfoModel::get(address.to_vec().as_slice())
                     .ok()
-                    .map(|sequencer| (address, sequencer.rpc_url))
+                    .map(|sequencer| (Address::from(address.to_vec()), sequencer.rpc_url))
             })
             .collect();
 

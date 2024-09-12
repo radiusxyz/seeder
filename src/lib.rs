@@ -1,3 +1,4 @@
+pub mod address;
 pub mod error;
 pub mod rpc;
 pub mod state;

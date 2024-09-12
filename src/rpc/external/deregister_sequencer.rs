@@ -6,7 +6,7 @@ use radius_sequencer_sdk::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{error::Error, state::AppState, types::prelude::*};
+use crate::{address::Address, error::Error, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterSequencerMessage {
@@ -14,7 +14,7 @@ struct DeregisterSequencerMessage {
     service_provider: ServiceProvider,
     cluster_id: String,
     chain_type: ChainType,
-    address: String,
+    address: Address,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -41,8 +41,6 @@ impl DeregisterSequencer {
             parameter.message.service_provider,
         );
 
-        let parameter_address = parameter.message.address.to_lowercase();
-
         let sequencing_info = SequencingInfosModel::get()?;
         let sequencing_info_payload = sequencing_info
             .sequencing_infos()
@@ -61,13 +59,13 @@ impl DeregisterSequencer {
                 // check if the sequencer is deregistered from the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| address.to_string().to_lowercase() == parameter_address)
+                    .find(|&&address| address == parameter.message.address.to_vec().as_slice())
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
             _ => {}
         }
 
-        SequencerNodeInfoModel::delete(&parameter_address)?;
+        SequencerNodeInfoModel::delete(parameter.message.address.to_vec().as_slice())?;
 
         Ok(())
     }

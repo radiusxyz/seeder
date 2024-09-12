@@ -6,7 +6,9 @@ use radius_sequencer_sdk::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{error::Error, state::AppState, types::prelude::*, util::health_check};
+use crate::{
+    address::Address, error::Error, state::AppState, types::prelude::*, util::health_check,
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct RegisterSequencerMessage {
@@ -14,7 +16,7 @@ struct RegisterSequencerMessage {
     service_provider: ServiceProvider,
     cluster_id: String,
     chain_type: ChainType,
-    address: String,
+    address: Address,
     rpc_url: String,
 }
 
@@ -42,8 +44,6 @@ impl RegisterSequencer {
             parameter.message.service_provider,
         );
 
-        let parameter_address = parameter.message.address.to_lowercase();
-
         let sequencing_info = SequencingInfosModel::get()?;
         let sequencing_info_payload = sequencing_info
             .sequencing_infos()
@@ -62,7 +62,7 @@ impl RegisterSequencer {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address.to_string().to_lowercase() == parameter_address)
+                    .find(|&address| address == parameter.message.address.to_vec().as_slice())
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
@@ -71,9 +71,11 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
+        let address = parameter.message.address.to_vec();
+
         let mut sequencer_node_info =
-            SequencerNodeInfoModel::get_mut_or_default(&parameter_address)?;
-        sequencer_node_info.sequencer_address = parameter_address.clone();
+            SequencerNodeInfoModel::get_mut_or_default(address.as_slice())?;
+        sequencer_node_info.sequencer_address = parameter.message.address.to_vec();
         sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
         sequencer_node_info.update()?;
 

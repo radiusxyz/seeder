@@ -6,15 +6,17 @@ use radius_sequencer_sdk::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{error::Error, state::AppState, types::prelude::*, util::health_check};
+use crate::{
+    address::Address, error::Error, state::AppState, types::prelude::*, util::health_check,
+};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct AddRollupMessage {
-    address: String,
     chain_type: ChainType,
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
+    address: Address,
     rpc_url: String,
 }
 
@@ -48,8 +50,6 @@ impl AddRollup {
             .get(&sequencing_key)
             .ok_or(Error::FailedToGetSequencingInfo)?;
 
-        let parameter_address = parameter.message.address.to_lowercase();
-
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(_payload) => {
                 let publisher = context.get_publisher(&sequencing_key).await?;
@@ -62,7 +62,7 @@ impl AddRollup {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address.to_string().to_lowercase() == parameter_address);
+                    .find(|&address| address == parameter.message.address.to_vec().as_slice());
             }
             _ => {}
         }
@@ -70,8 +70,10 @@ impl AddRollup {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        let mut rollup_node_info = RollupNodeInfoModel::get_mut_or_default(&parameter_address)?;
-        rollup_node_info.rollup_address = parameter_address.clone();
+        let address = parameter.message.address.to_vec();
+
+        let mut rollup_node_info = RollupNodeInfoModel::get_mut_or_default(address.as_slice())?;
+        rollup_node_info.rollup_address = parameter.message.address.to_vec();
         rollup_node_info.rpc_url = Some(parameter.message.rpc_url);
         rollup_node_info.update()?;
 

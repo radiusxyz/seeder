@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
-use crate::{rpc::prelude::*, state::AppState, types::prelude::*};
+use crate::{address::Address, rpc::prelude::*, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetExecutorRpcUrlList {
-    executor_address_list: Vec<String>,
+    executor_address_list: Vec<Address>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetExecutorRpcUrlListResponse {
-    pub executor_rpc_url_list: Vec<(String, Option<String>)>,
+    pub executor_rpc_url_list: Vec<(Address, Option<String>)>,
 }
 
 impl GetExecutorRpcUrlList {
@@ -21,12 +21,11 @@ impl GetExecutorRpcUrlList {
     ) -> Result<GetExecutorRpcUrlListResponse, RpcError> {
         let parameter = parameter.parse::<GetExecutorRpcUrlList>()?;
 
-        let executor_rpc_url_list: Vec<(String, Option<String>)> = parameter
+        let executor_rpc_url_list: Vec<(Address, Option<String>)> = parameter
             .executor_address_list
             .into_iter()
             .filter_map(|address| {
-                let address = address.to_lowercase();
-                RollupNodeInfoModel::get(&address)
+                RollupNodeInfoModel::get(address.to_vec().as_slice())
                     .ok()
                     .map(|sequencer| (address, sequencer.rpc_url))
             })
