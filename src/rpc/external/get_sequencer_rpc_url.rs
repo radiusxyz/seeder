@@ -3,12 +3,12 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    address::Address, rpc::prelude::*, state::AppState, types::prelude::SequencerNodeInfoModel,
+    address::SequencerAddress, rpc::prelude::*, state::AppState, types::prelude::SequencerNodeInfoModel,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrl {
-    address: Address,
+    address: SequencerAddress,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -25,8 +25,7 @@ impl GetSequencerRpcUrl {
     ) -> Result<GetSequencerRpcUrlResponse, RpcError> {
         let parameter = parameter.parse::<GetSequencerRpcUrl>()?;
 
-        let sequencer_rpc_url =
-            SequencerNodeInfoModel::get(&parameter.address.to_string())?.rpc_url;
+        let sequencer_rpc_url = SequencerNodeInfoModel::get(&parameter.address)?.rpc_url;
 
         Ok(GetSequencerRpcUrlResponse { sequencer_rpc_url })
     }

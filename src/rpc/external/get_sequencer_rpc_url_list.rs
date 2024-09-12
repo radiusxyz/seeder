@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use crate::{address::Address, rpc::prelude::*, state::AppState, types::prelude::*};
+use crate::{address::SequencerAddress, rpc::prelude::*, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlList {
-    sequencer_address_list: Vec<Address>,
+    sequencer_address_list: Vec<SequencerAddress>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -25,10 +25,9 @@ impl GetSequencerRpcUrlList {
             .sequencer_address_list
             .into_iter()
             .filter_map(|address| {
-                let address = address.to_string();
                 SequencerNodeInfoModel::get(&address)
                     .ok()
-                    .map(|sequencer| (address, sequencer.rpc_url))
+                    .map(|sequencer| (address.to_string(), sequencer.rpc_url))
             })
             .collect();
 

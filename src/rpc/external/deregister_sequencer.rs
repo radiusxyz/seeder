@@ -2,19 +2,18 @@ use std::sync::Arc;
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
-    signature::{ChainType, Signature},
+    signature::{Address, Platform, Signature},
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{address::Address, error::Error, state::AppState, types::prelude::*};
+use crate::{address::SequencerAddress, error::Error, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterSequencerMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
-    chain_type: ChainType,
-    address: Address,
+    address: SequencerAddress,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -30,10 +29,10 @@ impl DeregisterSequencer {
         let parameter = parameter.parse::<DeregisterSequencer>()?;
 
         // // verify siganture
-        // parameter.signature.verify_signature(
-        //     crate::rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
-        //     parameter.message.address.to_vec().as_slice(),
-        //     parameter.message.chain_type,
+        // parameter.signature.verify_message(
+        //     parameter.message.platform,
+        //     &parameter.message,
+        //     parameter.message.address.to_vec(),
         // )?;
 
         let sequencing_key = (
@@ -41,6 +40,10 @@ impl DeregisterSequencer {
             parameter.message.service_provider,
         );
 
+        let address = parameter
+            .message
+            .address
+            .to_sdk_address(parameter.message.platform);
         let sequencing_info = SequencingInfosModel::get()?;
         let sequencing_info_payload = sequencing_info
             .sequencing_infos()
@@ -65,7 +68,7 @@ impl DeregisterSequencer {
             _ => {}
         }
 
-        SequencerNodeInfoModel::delete(&parameter.message.address.to_string())?;
+        SequencerNodeInfoModel::delete(&parameter.message.address)?;
 
         Ok(())
     }

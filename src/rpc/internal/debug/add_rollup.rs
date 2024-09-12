@@ -7,7 +7,7 @@ use radius_sequencer_sdk::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    address::Address, error::Error, state::AppState, types::prelude::*, util::health_check,
+    address::SequencerAddress, error::Error, state::AppState, types::prelude::*, util::health_check,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -16,7 +16,7 @@ struct AddRollupMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
-    address: Address,
+    address: SequencerAddress,
     rpc_url: String,
 }
 

@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
-    signature::{ChainType, Signature},
+    signature::Signature,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    address::Address, error::Error, state::AppState, types::prelude::*, util::health_check,
+    address::SequencerAddress, error::Error, state::AppState, types::prelude::*, util::health_check,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -15,8 +15,7 @@ struct RegisterSequencerMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
-    chain_type: ChainType,
-    address: Address,
+    address: SequencerAddress,
     rpc_url: String,
 }
 
@@ -71,10 +70,9 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        let address = parameter.message.address.to_string();
-
-        let mut sequencer_node_info = SequencerNodeInfoModel::get_mut_or_default(&address)?;
-        sequencer_node_info.sequencer_address = address.clone();
+        let mut sequencer_node_info =
+            SequencerNodeInfoModel::get_mut_or_default(&parameter.message.address)?;
+        sequencer_node_info.sequencer_address = parameter.message.address.to_string();
         sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
         sequencer_node_info.update()?;
 
