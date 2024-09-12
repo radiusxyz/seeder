@@ -35,7 +35,7 @@ impl RegisterSequencer {
         // // verify siganture
         // parameter.signature.verify_signature(
         //     crate::rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
-        //     parameter.message.address.as_slice(),
+        //     parameter.message.address.to_vec().as_slice(),
         //     parameter.message.chain_type,
         // )?;
 
@@ -62,7 +62,7 @@ impl RegisterSequencer {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address == parameter.message.address.to_vec().as_slice())
+                    .find(|&&address| parameter.message.address == address)
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
@@ -71,11 +71,10 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        let address = parameter.message.address.to_vec();
+        let address = parameter.message.address.to_string();
 
-        let mut sequencer_node_info =
-            SequencerNodeInfoModel::get_mut_or_default(address.as_slice())?;
-        sequencer_node_info.sequencer_address = parameter.message.address.to_vec();
+        let mut sequencer_node_info = SequencerNodeInfoModel::get_mut_or_default(&address)?;
+        sequencer_node_info.sequencer_address = address.clone();
         sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
         sequencer_node_info.update()?;
 

@@ -7,9 +7,9 @@ pub struct RollupNodeInfo {
 }
 
 impl RollupNodeInfo {
-    pub fn new(address: Vec<u8>, rpc_url: Option<String>) -> Self {
+    pub fn new(rollup_address: Vec<u8>, rpc_url: Option<String>) -> Self {
         Self {
-            rollup_address: address,
+            rollup_address,
             rpc_url,
         }
     }

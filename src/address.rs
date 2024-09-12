@@ -46,6 +46,33 @@ impl TryFrom<AddressInner> for Address {
     }
 }
 
+impl std::fmt::Display for Address {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::String(address_string) => {
+                let lowercased = address_string.to_lowercase();
+                write!(f, "{}", lowercased)
+            }
+            Self::Array(address_array) => fmt_hex_string(f, address_array),
+        }
+    }
+}
+
+impl PartialEq<radius_sequencer_sdk::liveness_radius::types::Address> for Address {
+    fn eq(&self, other: &radius_sequencer_sdk::liveness_radius::types::Address) -> bool {
+        match self {
+            Self::String(address_string) => {
+                if let Some(address_array) = hex_to_bytes(address_string) {
+                    address_array.as_slice() == other
+                } else {
+                    false
+                }
+            }
+            Self::Array(address_array) => address_array.as_slice() == other,
+        }
+    }
+}
+
 impl Address {
     pub fn to_vec(&self) -> Vec<u8> {
         match self {
@@ -76,4 +103,10 @@ fn hex_to_bytes(hex_str: &str) -> Option<Vec<u8>> {
     } else {
         None
     }
+}
+
+pub fn fmt_hex_string(f: &mut std::fmt::Formatter, data: &[u8]) -> std::fmt::Result {
+    f.write_str("0x")?;
+    data.iter()
+        .try_for_each(|byte| f.write_fmt(format_args!("{:02x}", byte)))
 }

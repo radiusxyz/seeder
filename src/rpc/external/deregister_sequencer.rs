@@ -31,8 +31,8 @@ impl DeregisterSequencer {
 
         // // verify siganture
         // parameter.signature.verify_signature(
-        //     rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
-        //     parameter.message.address.as_slice(),
+        //     crate::rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
+        //     parameter.message.address.to_vec().as_slice(),
         //     parameter.message.chain_type,
         // )?;
 
@@ -59,13 +59,13 @@ impl DeregisterSequencer {
                 // check if the sequencer is deregistered from the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| address == parameter.message.address.to_vec().as_slice())
+                    .find(|&&address| parameter.message.address == address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
             _ => {}
         }
 
-        SequencerNodeInfoModel::delete(parameter.message.address.to_vec().as_slice())?;
+        SequencerNodeInfoModel::delete(&parameter.message.address.to_string())?;
 
         Ok(())
     }

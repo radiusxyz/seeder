@@ -11,7 +11,7 @@ struct GetSequencerRpcUrlListAtBlockHeigthMessage {
     service_provider: ServiceProvider,
     cluster_id: String,
     chain_type: ChainType,
-    address: String,
+    address: Address,
     block_height: u64,
 }
 
@@ -43,8 +43,8 @@ impl GetSequencerRpcUrlListAtBlockHeight {
 
         // // verify siganture
         // parameter.signature.verify_signature(
-        //     rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
-        //     parameter.message.address.as_slice(),
+        //     crate::rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
+        //     parameter.message.address.to_vec().as_slice(),
         //     parameter.message.chain_type,
         // )?;
 
@@ -71,10 +71,7 @@ impl GetSequencerRpcUrlListAtBlockHeight {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| {
-                        address.to_string().to_lowercase()
-                            == parameter.message.address.to_lowercase()
-                    })
+                    .find(|&&address| parameter.message.address == address)
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
@@ -91,7 +88,7 @@ impl GetSequencerRpcUrlListAtBlockHeight {
         let rpc_url_list: Vec<(Address, Option<String>)> = sequencer_list
             .into_iter()
             .filter_map(|address| {
-                SequencerNodeInfoModel::get(address.to_vec().as_slice())
+                SequencerNodeInfoModel::get(&address.to_string())
                     .ok()
                     .map(|sequencer| (Address::from(address.to_vec()), sequencer.rpc_url))
             })

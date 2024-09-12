@@ -26,7 +26,7 @@ impl GetSequencerRpcUrl {
         let parameter = parameter.parse::<GetSequencerRpcUrl>()?;
 
         let sequencer_rpc_url =
-            SequencerNodeInfoModel::get(parameter.address.to_vec().as_slice())?.rpc_url;
+            SequencerNodeInfoModel::get(&parameter.address.to_string())?.rpc_url;
 
         Ok(GetSequencerRpcUrlResponse { sequencer_rpc_url })
     }

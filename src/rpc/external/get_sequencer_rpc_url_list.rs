@@ -25,7 +25,7 @@ impl GetSequencerRpcUrlList {
             .sequencer_address_list
             .into_iter()
             .filter_map(|address| {
-                SequencerNodeInfoModel::get(address.to_vec().as_slice())
+                SequencerNodeInfoModel::get(&address.to_string())
                     .ok()
                     .map(|sequencer| (address, sequencer.rpc_url))
             })

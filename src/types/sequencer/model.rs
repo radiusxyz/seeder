@@ -11,17 +11,17 @@ impl SequencerNodeInfoModel {
         kvstore()?.put(&key, sequencer_node_info)
     }
 
-    pub fn get(address: &[u8]) -> Result<SequencerNodeInfo, KvStoreError> {
+    pub fn get(address: &str) -> Result<SequencerNodeInfo, KvStoreError> {
         let key = (Self::ID, address);
         kvstore()?.get(&key)
     }
 
-    pub fn get_mut_or_default(address: &[u8]) -> Result<Lock<SequencerNodeInfo>, KvStoreError> {
+    pub fn get_mut_or_default(address: &str) -> Result<Lock<SequencerNodeInfo>, KvStoreError> {
         let key = (Self::ID, address);
         kvstore()?.get_mut_or_default(&key)
     }
 
-    pub fn delete(address: &[u8]) -> Result<(), KvStoreError> {
+    pub fn delete(address: &str) -> Result<(), KvStoreError> {
         let key = (Self::ID, address);
         kvstore()?.delete(&key)
     }
