@@ -73,7 +73,7 @@ impl RegisterSequencer {
 
         let mut sequencer_node_info =
             SequencerNodeInfoModel::get_mut_or_default(&parameter_address)?;
-        sequencer_node_info.sequencer_address = parameter.message.address.to_lowercase();
+        sequencer_node_info.sequencer_address = parameter_address.clone();
         sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
         sequencer_node_info.update()?;
 

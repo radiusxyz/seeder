@@ -70,26 +70,10 @@ impl AddRollup {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        match RollupNodeInfoModel::get_mut(&parameter_address) {
-            Ok(mut rollup_node_info) => {
-                rollup_node_info.rpc_url = Some(parameter.message.rpc_url);
-
-                rollup_node_info.update()?;
-            }
-            Err(error) => {
-                if error.is_none_type() {
-                    let rollup_node_info = RollupNodeInfo::new(
-                        parameter_address.clone(),
-                        Some(parameter.message.rpc_url),
-                    );
-
-                    RollupNodeInfoModel::put(&rollup_node_info)?;
-                } else {
-                    tracing::error!("Failed to add rollup: {:?}", error);
-                    return Err(error.into());
-                }
-            }
-        };
+        let mut rollup_node_info = RollupNodeInfoModel::get_mut_or_default(&parameter_address)?;
+        rollup_node_info.rollup_address = parameter_address.clone();
+        rollup_node_info.rpc_url = Some(parameter.message.rpc_url);
+        rollup_node_info.update()?;
 
         Ok(())
     }

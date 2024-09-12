@@ -1,21 +1,4 @@
-pub use serde::{Deserialize, Serialize};
-
 use crate::types::prelude::*;
-
-#[derive(Clone, Default, Debug, Deserialize, Serialize)]
-pub struct SequencerNodeInfo {
-    pub sequencer_address: String,
-    pub rpc_url: Option<String>,
-}
-
-impl SequencerNodeInfo {
-    pub fn new(sequencer_address: String, rpc_url: Option<String>) -> Self {
-        Self {
-            sequencer_address,
-            rpc_url,
-        }
-    }
-}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SequencerNodeInfoModel;
@@ -33,26 +16,9 @@ impl SequencerNodeInfoModel {
         kvstore()?.get(&key)
     }
 
-    pub fn get_mut(address: &str) -> Result<Lock<SequencerNodeInfo>, KvStoreError> {
-        let key = (Self::ID, address);
-        kvstore()?.get_mut(&key)
-    }
-
     pub fn get_mut_or_default(address: &str) -> Result<Lock<SequencerNodeInfo>, KvStoreError> {
         let key = (Self::ID, address);
         kvstore()?.get_mut_or_default(&key)
-    }
-
-    pub fn apply(
-        address: &str,
-        f: impl FnOnce(&mut SequencerNodeInfo) -> Result<(), KvStoreError>,
-    ) -> Result<(), KvStoreError> {
-        let key = (Self::ID, address);
-        kvstore()?.apply(&key, |locked_value: &mut Lock<SequencerNodeInfo>| {
-            f(locked_value).unwrap()
-        })?;
-
-        Ok(())
     }
 
     pub fn delete(address: &str) -> Result<(), KvStoreError> {

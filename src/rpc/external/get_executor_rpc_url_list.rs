@@ -25,6 +25,7 @@ impl GetExecutorRpcUrlList {
             .executor_address_list
             .into_iter()
             .filter_map(|address| {
+                let address = address.to_lowercase();
                 RollupNodeInfoModel::get(&address)
                     .ok()
                     .map(|sequencer| (address, sequencer.rpc_url))

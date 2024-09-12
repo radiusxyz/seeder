@@ -41,6 +41,8 @@ impl DeregisterSequencer {
             parameter.message.service_provider,
         );
 
+        let parameter_address = parameter.message.address.to_lowercase();
+
         let sequencing_info = SequencingInfosModel::get()?;
         let sequencing_info_payload = sequencing_info
             .sequencing_infos()
@@ -59,16 +61,13 @@ impl DeregisterSequencer {
                 // check if the sequencer is deregistered from the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| {
-                        address.to_string().to_lowercase()
-                            == parameter.message.address.to_lowercase()
-                    })
+                    .find(|&&address| address.to_string().to_lowercase() == parameter_address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
             _ => {}
         }
 
-        SequencerNodeInfoModel::delete(&parameter.message.address.to_lowercase())?;
+        SequencerNodeInfoModel::delete(&parameter_address)?;
 
         Ok(())
     }
