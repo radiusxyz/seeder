@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use radius_sequencer_sdk::liveness_radius::publisher::Publisher;
 use tokio::sync::Mutex;
@@ -13,7 +13,7 @@ pub struct AppState {
 }
 
 struct AppStateInner {
-    publishers: Mutex<BTreeMap<(Platform, ServiceProvider), Arc<Publisher>>>,
+    publishers: Mutex<HashMap<(Platform, ServiceProvider), Arc<Publisher>>>,
 }
 
 unsafe impl Send for AppState {}
@@ -29,7 +29,7 @@ impl Clone for AppState {
 }
 
 impl AppState {
-    pub fn new(publisher: BTreeMap<(Platform, ServiceProvider), Arc<Publisher>>) -> Self {
+    pub fn new(publisher: HashMap<(Platform, ServiceProvider), Arc<Publisher>>) -> Self {
         let inner = AppStateInner {
             publishers: Mutex::new(publisher),
         };

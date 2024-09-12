@@ -1,4 +1,4 @@
-use crate::types::prelude::*;
+use crate::{address::Address, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct RollupNodeInfoModel;
@@ -11,17 +11,17 @@ impl RollupNodeInfoModel {
         kvstore()?.put(&key, rollup_node_info)
     }
 
-    pub fn get(address: &[u8]) -> Result<RollupNodeInfo, KvStoreError> {
+    pub fn get(address: &Address) -> Result<RollupNodeInfo, KvStoreError> {
         let key = (Self::ID, address);
         kvstore()?.get(&key)
     }
 
-    pub fn get_mut_or_default(address: &[u8]) -> Result<Lock<RollupNodeInfo>, KvStoreError> {
+    pub fn get_mut(address: &Address) -> Result<Lock<RollupNodeInfo>, KvStoreError> {
         let key = (Self::ID, address);
-        kvstore()?.get_mut_or_default(&key)
+        kvstore()?.get_mut(&key)
     }
 
-    pub fn delete(address: &[u8]) -> Result<(), KvStoreError> {
+    pub fn delete(address: &Address) -> Result<(), KvStoreError> {
         let key = (Self::ID, address);
         kvstore()?.delete(&key)
     }

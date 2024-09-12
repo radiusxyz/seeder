@@ -2,21 +2,20 @@ use std::sync::Arc;
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
-    signature::{ChainType, Signature},
+    signature::Signature,
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    address::SequencerAddress, error::Error, state::AppState, types::prelude::*, util::health_check,
+    address::Address, error::Error, state::AppState, types::prelude::*, util::health_check,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct AddRollupMessage {
-    chain_type: ChainType,
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
-    address: SequencerAddress,
+    address: Address,
     rpc_url: String,
 }
 
@@ -50,6 +49,12 @@ impl AddRollup {
             .get(&sequencing_key)
             .ok_or(Error::FailedToGetSequencingInfo)?;
 
+        //
+        let sdk_address = parameter
+            .message
+            .address
+            .to_sdk_address(to_sdk_platform(parameter.message.platform))?;
+
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(_payload) => {
                 let publisher = context.get_publisher(&sequencing_key).await?;
@@ -62,7 +67,7 @@ impl AddRollup {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| address == parameter.message.address.to_vec().as_slice());
+                    .find(|&address| sdk_address == address);
             }
             _ => {}
         }
@@ -70,12 +75,24 @@ impl AddRollup {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        let address = parameter.message.address.to_vec();
-
-        let mut rollup_node_info = RollupNodeInfoModel::get_mut_or_default(address.as_slice())?;
-        rollup_node_info.rollup_address = parameter.message.address.to_vec();
-        rollup_node_info.rpc_url = Some(parameter.message.rpc_url);
-        rollup_node_info.update()?;
+        match RollupNodeInfoModel::get_mut(&parameter.message.address) {
+            Ok(mut rollup_node_info) => {
+                rollup_node_info.rollup_address = parameter.message.address.clone();
+                rollup_node_info.rpc_url = Some(parameter.message.rpc_url);
+                rollup_node_info.update()?;
+            }
+            Err(error) => {
+                if error.is_none_type() {
+                    let rollup_node_info = RollupNodeInfo::new(
+                        parameter.message.address.clone(),
+                        Some(parameter.message.rpc_url),
+                    );
+                    RollupNodeInfoModel::put(&rollup_node_info)?;
+                } else {
+                    return Err(error.into());
+                }
+            }
+        }
 
         Ok(())
     }

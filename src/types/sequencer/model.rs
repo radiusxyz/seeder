@@ -1,4 +1,4 @@
-use crate::{address::SequencerAddress, types::prelude::*};
+use crate::{address::Address, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SequencerNodeInfoModel;
@@ -11,17 +11,17 @@ impl SequencerNodeInfoModel {
         kvstore()?.put(&key, sequencer_node_info)
     }
 
-    pub fn get(address: &SequencerAddress) -> Result<SequencerNodeInfo, KvStoreError> {
+    pub fn get(address: &Address) -> Result<SequencerNodeInfo, KvStoreError> {
         let key = (Self::ID, address);
         kvstore()?.get(&key)
     }
 
-    pub fn get_mut_or_default(address: &SequencerAddress) -> Result<Lock<SequencerNodeInfo>, KvStoreError> {
+    pub fn get_mut(address: &Address) -> Result<Lock<SequencerNodeInfo>, KvStoreError> {
         let key = (Self::ID, address);
-        kvstore()?.get_mut_or_default(&key)
+        kvstore()?.get_mut(&key)
     }
 
-    pub fn delete(address: &SequencerAddress) -> Result<(), KvStoreError> {
+    pub fn delete(address: &Address) -> Result<(), KvStoreError> {
         let key = (Self::ID, address);
         kvstore()?.delete(&key)
     }

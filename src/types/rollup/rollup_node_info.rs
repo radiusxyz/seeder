@@ -1,13 +1,15 @@
 pub use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+use crate::address::Address;
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct RollupNodeInfo {
-    pub rollup_address: Vec<u8>,
+    pub rollup_address: Address,
     pub rpc_url: Option<String>,
 }
 
 impl RollupNodeInfo {
-    pub fn new(rollup_address: Vec<u8>, rpc_url: Option<String>) -> Self {
+    pub fn new(rollup_address: Address, rpc_url: Option<String>) -> Self {
         Self {
             rollup_address,
             rpc_url,

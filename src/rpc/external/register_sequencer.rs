@@ -7,7 +7,7 @@ use radius_sequencer_sdk::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    address::SequencerAddress, error::Error, state::AppState, types::prelude::*, util::health_check,
+    address::Address, error::Error, state::AppState, types::prelude::*, util::health_check,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -15,7 +15,7 @@ struct RegisterSequencerMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
-    address: SequencerAddress,
+    address: Address,
     rpc_url: String,
 }
 
@@ -49,6 +49,11 @@ impl RegisterSequencer {
             .get(&sequencing_key)
             .ok_or(Error::FailedToGetSequencingInfo)?;
 
+        let sdk_address = parameter
+            .message
+            .address
+            .to_sdk_address(to_sdk_platform(parameter.message.platform))?;
+
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(_payload) => {
                 let publisher = context.get_publisher(&sequencing_key).await?;
@@ -61,7 +66,7 @@ impl RegisterSequencer {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| parameter.message.address == address)
+                    .find(|&&address| sdk_address == address)
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
@@ -70,11 +75,24 @@ impl RegisterSequencer {
         // health check
         health_check(parameter.message.rpc_url.as_str()).await?;
 
-        let mut sequencer_node_info =
-            SequencerNodeInfoModel::get_mut_or_default(&parameter.message.address)?;
-        sequencer_node_info.sequencer_address = parameter.message.address.to_string();
-        sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
-        sequencer_node_info.update()?;
+        match SequencerNodeInfoModel::get_mut(&parameter.message.address) {
+            Ok(mut sequencer_node_info) => {
+                sequencer_node_info.sequencer_address = parameter.message.address.clone();
+                sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
+                sequencer_node_info.update()?;
+            }
+            Err(error) => {
+                if error.is_none_type() {
+                    let sequencer_node_info = SequencerNodeInfo::new(
+                        parameter.message.address.clone(),
+                        Some(parameter.message.rpc_url.clone()),
+                    );
+                    SequencerNodeInfoModel::put(&sequencer_node_info)?;
+                } else {
+                    return Err(error.into());
+                }
+            }
+        }
 
         Ok(())
     }

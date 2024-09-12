@@ -2,18 +2,18 @@ use std::sync::Arc;
 
 use radius_sequencer_sdk::{
     json_rpc::{types::RpcParameter, RpcError},
-    signature::{Address, Platform, Signature},
+    signature::Signature,
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{address::SequencerAddress, error::Error, state::AppState, types::prelude::*};
+use crate::{address::Address, error::Error, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterSequencerMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
-    address: SequencerAddress,
+    address: Address,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -40,15 +40,16 @@ impl DeregisterSequencer {
             parameter.message.service_provider,
         );
 
-        let address = parameter
-            .message
-            .address
-            .to_sdk_address(parameter.message.platform);
         let sequencing_info = SequencingInfosModel::get()?;
         let sequencing_info_payload = sequencing_info
             .sequencing_infos()
             .get(&sequencing_key)
             .ok_or(Error::FailedToGetSequencingInfo)?;
+
+        let sdk_address = parameter
+            .message
+            .address
+            .to_sdk_address(to_sdk_platform(parameter.message.platform))?;
 
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(_payload) => {
@@ -62,7 +63,7 @@ impl DeregisterSequencer {
                 // check if the sequencer is deregistered from the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| parameter.message.address == address)
+                    .find(|&&address| sdk_address == address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
             _ => {}

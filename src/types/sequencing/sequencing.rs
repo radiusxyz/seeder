@@ -1,12 +1,20 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+// TODO: merge with radius_sequencer_sdk::signature::Platform
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
 pub enum Platform {
     Ethereum,
     Local,
+}
+
+pub fn to_sdk_platform(platform: Platform) -> radius_sequencer_sdk::signature::Platform {
+    match platform {
+        Platform::Ethereum => radius_sequencer_sdk::signature::Platform::Ethereum,
+        Platform::Local => radius_sequencer_sdk::signature::Platform::Ethereum,
+    }
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -35,12 +43,10 @@ pub struct LivenessLocal {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
-pub struct SequencingInfos(BTreeMap<(Platform, ServiceProvider), SequencingInfoPayload>);
+pub struct SequencingInfos(HashMap<(Platform, ServiceProvider), SequencingInfoPayload>);
 
 impl SequencingInfos {
-    pub fn sequencing_infos(
-        &self,
-    ) -> &BTreeMap<(Platform, ServiceProvider), SequencingInfoPayload> {
+    pub fn sequencing_infos(&self) -> &HashMap<(Platform, ServiceProvider), SequencingInfoPayload> {
         &self.0
     }
 

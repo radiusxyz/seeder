@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use debug::AddRollup;
 use radius_sequencer_sdk::{
@@ -65,7 +65,7 @@ async fn main() -> Result<(), Error> {
 
 async fn initialize_app_state() -> Result<AppState, Error> {
     // init app state
-    let app_state = AppState::new(BTreeMap::new());
+    let app_state = AppState::new(HashMap::new());
 
     let sequencing_infos = SequencingInfosModel::get_mut_or_default()?;
 
