@@ -6,8 +6,8 @@ pub struct RollupNodeInfoModel;
 impl RollupNodeInfoModel {
     pub const ID: &'static str = stringify!(RollupNodeInfoModel);
 
-    pub fn put(rollup_node_info: &RollupNodeInfo) -> Result<(), KvStoreError> {
-        let key = (Self::ID, &rollup_node_info.rollup_address);
+    pub fn put(address: &Address, rollup_node_info: &RollupNodeInfo) -> Result<(), KvStoreError> {
+        let key = (Self::ID, address);
         kvstore()?.put(&key, rollup_node_info)
     }
 

@@ -6,8 +6,11 @@ pub struct SequencerNodeInfoModel;
 impl SequencerNodeInfoModel {
     pub const ID: &'static str = stringify!(SequencerModel);
 
-    pub fn put(sequencer_node_info: &SequencerNodeInfo) -> Result<(), KvStoreError> {
-        let key = (Self::ID, &sequencer_node_info.sequencer_address);
+    pub fn put(
+        address: &Address,
+        sequencer_node_info: &SequencerNodeInfo,
+    ) -> Result<(), KvStoreError> {
+        let key = (Self::ID, address);
         kvstore()?.put(&key, sequencer_node_info)
     }
 

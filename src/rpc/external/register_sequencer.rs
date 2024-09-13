@@ -77,17 +77,17 @@ impl RegisterSequencer {
 
         match SequencerNodeInfoModel::get_mut(&parameter.message.address) {
             Ok(mut sequencer_node_info) => {
-                sequencer_node_info.sequencer_address = parameter.message.address.clone();
+                sequencer_node_info.sequencer_address = parameter.message.address.to_string();
                 sequencer_node_info.rpc_url = Some(parameter.message.rpc_url);
                 sequencer_node_info.update()?;
             }
             Err(error) => {
                 if error.is_none_type() {
                     let sequencer_node_info = SequencerNodeInfo::new(
-                        parameter.message.address.clone(),
+                        parameter.message.address.to_string(),
                         Some(parameter.message.rpc_url.clone()),
                     );
-                    SequencerNodeInfoModel::put(&sequencer_node_info)?;
+                    SequencerNodeInfoModel::put(&parameter.message.address, &sequencer_node_info)?;
                 } else {
                     return Err(error.into());
                 }

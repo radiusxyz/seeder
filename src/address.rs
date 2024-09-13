@@ -41,6 +41,18 @@ impl TryFrom<AddressInner> for Address {
     }
 }
 
+impl std::fmt::Display for Address {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::String(address_string) => {
+                let lowercased = address_string.to_lowercase();
+                write!(f, "{}", lowercased)
+            }
+            Self::Array(address_array) => fmt_hex_string(f, address_array),
+        }
+    }
+}
+
 impl Address {
     pub fn to_sdk_address(
         &self,
@@ -58,4 +70,10 @@ impl Address {
             }
         }
     }
+}
+
+pub fn fmt_hex_string(f: &mut std::fmt::Formatter, data: &[u8]) -> std::fmt::Result {
+    f.write_str("0x")?;
+    data.iter()
+        .try_for_each(|byte| f.write_fmt(format_args!("{:02x}", byte)))
 }

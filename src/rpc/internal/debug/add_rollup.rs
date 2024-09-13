@@ -77,17 +77,17 @@ impl AddRollup {
 
         match RollupNodeInfoModel::get_mut(&parameter.message.address) {
             Ok(mut rollup_node_info) => {
-                rollup_node_info.rollup_address = parameter.message.address.clone();
+                rollup_node_info.rollup_address = parameter.message.address.to_string();
                 rollup_node_info.rpc_url = Some(parameter.message.rpc_url);
                 rollup_node_info.update()?;
             }
             Err(error) => {
                 if error.is_none_type() {
                     let rollup_node_info = RollupNodeInfo::new(
-                        parameter.message.address.clone(),
+                        parameter.message.address.to_string(),
                         Some(parameter.message.rpc_url),
                     );
-                    RollupNodeInfoModel::put(&rollup_node_info)?;
+                    RollupNodeInfoModel::put(&parameter.message.address, &rollup_node_info)?;
                 } else {
                     return Err(error.into());
                 }
