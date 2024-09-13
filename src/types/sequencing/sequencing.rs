@@ -10,10 +10,12 @@ pub enum Platform {
     Local,
 }
 
-pub fn to_sdk_platform(platform: Platform) -> radius_sequencer_sdk::signature::Platform {
-    match platform {
-        Platform::Ethereum => radius_sequencer_sdk::signature::Platform::Ethereum,
-        Platform::Local => radius_sequencer_sdk::signature::Platform::Ethereum,
+impl From<Platform> for radius_sequencer_sdk::signature::Platform {
+    fn from(value: Platform) -> Self {
+        match value {
+            Platform::Ethereum => Self::Ethereum,
+            Platform::Local => Self::Ethereum, // TODO:
+        }
     }
 }
 

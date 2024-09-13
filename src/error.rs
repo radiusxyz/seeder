@@ -6,6 +6,7 @@ pub enum Error {
     ParseConfig(toml::de::Error),
     Database(KvStoreError),
     JsonRPC(radius_sequencer_sdk::json_rpc::Error),
+    SignatureError(radius_sequencer_sdk::signature::SignatureError),
     SignatureMismatch,
 
     Deserialize(serde_json::Error),
@@ -54,6 +55,7 @@ impl std::fmt::Display for Error {
             Self::OpenConfig(error) => write!(f, "{}", error),
             Self::ParseConfig(error) => write!(f, "{}", error),
             Self::Database(error) => write!(f, "{}", error),
+            Self::SignatureError(error) => write!(f, "{}", error),
             Self::JsonRPC(error) => write!(f, "{}", error),
             Self::SignatureMismatch => write!(f, "Sender is not the signer."),
             Self::InvalidURL(error) => {
@@ -138,6 +140,12 @@ impl From<KvStoreError> for Error {
 impl From<radius_sequencer_sdk::json_rpc::Error> for Error {
     fn from(value: radius_sequencer_sdk::json_rpc::Error) -> Self {
         Self::JsonRPC(value)
+    }
+}
+
+impl From<radius_sequencer_sdk::signature::SignatureError> for Error {
+    fn from(value: radius_sequencer_sdk::signature::SignatureError) -> Self {
+        Self::SignatureError(value)
     }
 }
 

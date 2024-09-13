@@ -22,7 +22,7 @@ pub struct GetSequencerRpcUrlListAtBlockHeight {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlListAtBlockHeighResponse {
-    pub rpc_url_list: Vec<(String, Option<String>)>,
+    pub rpc_url_list: Vec<(Address, Option<String>)>,
     pub block_height: u64,
 }
 
@@ -40,11 +40,16 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             parameter.message.cluster_id
         );
 
+        // let platform_address = parameter
+        //     .message
+        //     .address
+        //     .get_platform_address(parameter.message.platform)?;
+
         // // verify siganture
-        // parameter.signature.verify_signature(
-        //     crate::rpc::methods::serialize_to_bincode(&parameter.message)?.as_slice(),
-        //     parameter.message.address.to_vec().as_slice(),
-        //     parameter.message.chain_type,
+        // parameter.signature.verify_message(
+        //     parameter.message.platform.into(),
+        //     &parameter.message,
+        //     platform_address,
         // )?;
 
         let sequencing_key = (
@@ -58,10 +63,10 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             .get(&sequencing_key)
             .ok_or(Error::FailedToGetSequencingInfo)?;
 
-        let sdk_address = parameter
+        let platform_address = parameter
             .message
             .address
-            .to_sdk_address(to_sdk_platform(parameter.message.platform))?;
+            .get_platform_address(parameter.message.platform)?;
 
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(_payload) => {
@@ -75,7 +80,7 @@ impl GetSequencerRpcUrlListAtBlockHeight {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| sdk_address == address)
+                    .find(|&&address| platform_address == address)
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
@@ -89,13 +94,14 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             )
             .await?;
 
-        let rpc_url_list: Vec<(String, Option<String>)> = sequencer_list
+        let rpc_url_list: Vec<(Address, Option<String>)> = sequencer_list
             .into_iter()
             .filter_map(|address| {
-                let address = Address::from(address.to_vec());
+                let address = Address::new(address.to_string());
+
                 SequencerNodeInfoModel::get(&address)
                     .ok()
-                    .map(|sequencer| (address.to_string(), sequencer.rpc_url))
+                    .map(|sequencer| (address, sequencer.rpc_url))
             })
             .collect();
 

@@ -28,11 +28,16 @@ impl DeregisterSequencer {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<DeregisterSequencer>()?;
 
+        // let platform_address = parameter
+        //     .message
+        //     .address
+        //     .get_platform_address(parameter.message.platform)?;
+
         // // verify siganture
         // parameter.signature.verify_message(
-        //     parameter.message.platform,
+        //     parameter.message.platform.into(),
         //     &parameter.message,
-        //     parameter.message.address.to_vec(),
+        //     platform_address,
         // )?;
 
         let sequencing_key = (
@@ -46,10 +51,10 @@ impl DeregisterSequencer {
             .get(&sequencing_key)
             .ok_or(Error::FailedToGetSequencingInfo)?;
 
-        let sdk_address = parameter
+        let platform_address = parameter
             .message
             .address
-            .to_sdk_address(to_sdk_platform(parameter.message.platform))?;
+            .get_platform_address(parameter.message.platform)?;
 
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(_payload) => {
@@ -63,7 +68,7 @@ impl DeregisterSequencer {
                 // check if the sequencer is deregistered from the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| sdk_address == address)
+                    .find(|&&address| platform_address == address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
             _ => {}
