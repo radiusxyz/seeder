@@ -1,9 +1,4 @@
-use std::sync::Arc;
-
-use radius_sequencer_sdk::json_rpc::{types::RpcParameter, RpcError};
-use serde::{Deserialize, Serialize};
-
-use crate::{error::Error, state::AppState, types::prelude::*};
+use crate::{error::Error, rpc::prelude::*, state::AppState, types::*};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterSequencerMessage {

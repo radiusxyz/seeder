@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use crate::{rpc::prelude::*, state::AppState, types::prelude::*};
+use crate::{rpc::prelude::*, state::AppState, types::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlList {

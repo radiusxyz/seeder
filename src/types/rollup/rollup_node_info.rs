@@ -1,5 +1,4 @@
-use radius_sequencer_sdk::signature::Address;
-pub use serde::{Deserialize, Serialize};
+use crate::types::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct RollupNodeInfo {

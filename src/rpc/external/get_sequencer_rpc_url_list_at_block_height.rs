@@ -1,8 +1,4 @@
-use std::sync::Arc;
-
-use tracing::info;
-
-use crate::{error::Error, rpc::prelude::*, state::AppState, types::prelude::*};
+use crate::{error::Error, rpc::prelude::*, state::AppState, types::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetSequencerRpcUrlListAtBlockHeigthMessage {
@@ -34,7 +30,7 @@ impl GetSequencerRpcUrlListAtBlockHeight {
     ) -> Result<GetSequencerRpcUrlListAtBlockHeighResponse, RpcError> {
         let parameter = parameter.parse::<GetSequencerRpcUrlListAtBlockHeight>()?;
 
-        info!(
+        tracing::info!(
             "get_sequencer_rpc_url_list_for_rollup: {:?}",
             parameter.message.cluster_id
         );

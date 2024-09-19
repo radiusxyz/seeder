@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::{rpc::prelude::*, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
