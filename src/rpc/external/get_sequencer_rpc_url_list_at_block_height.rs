@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
-use radius_sequencer_sdk::signature::Signature;
 use tracing::info;
 
-use crate::{address::Address, error::Error, rpc::prelude::*, state::AppState, types::prelude::*};
+use crate::{error::Error, rpc::prelude::*, state::AppState, types::prelude::*};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetSequencerRpcUrlListAtBlockHeigthMessage {
@@ -40,16 +39,11 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             parameter.message.cluster_id
         );
 
-        // let platform_address = parameter
-        //     .message
-        //     .address
-        //     .get_platform_address(parameter.message.platform)?;
-
         // // verify siganture
         // parameter.signature.verify_message(
         //     parameter.message.platform.into(),
         //     &parameter.message,
-        //     platform_address,
+        //     parameter.message.address.as_ref(),
         // )?;
 
         let sequencing_key = (
@@ -63,11 +57,6 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             .get(&sequencing_key)
             .ok_or(Error::FailedToGetSequencingInfo)?;
 
-        let platform_address = parameter
-            .message
-            .address
-            .get_platform_address(parameter.message.platform)?;
-
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(_payload) => {
                 let publisher = context.get_publisher(&sequencing_key).await?;
@@ -80,7 +69,7 @@ impl GetSequencerRpcUrlListAtBlockHeight {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| platform_address == address)
+                    .find(|&&address| parameter.message.address == address)
                     .ok_or(Error::UnRegisteredFromContract)?;
             }
             _ => {}
@@ -94,10 +83,13 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             )
             .await?;
 
+        let chain_type =
+            radius_sequencer_sdk::signature::Platform::from(parameter.message.platform);
+
         let rpc_url_list: Vec<(Address, Option<String>)> = sequencer_list
             .into_iter()
             .filter_map(|address| {
-                let address = Address::new(address.to_string());
+                let address = Address::from_slice(chain_type, address.as_ref()).ok()?;
 
                 SequencerNodeInfoModel::get(&address)
                     .ok()

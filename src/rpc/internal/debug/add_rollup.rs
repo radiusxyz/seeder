@@ -1,14 +1,9 @@
 use std::sync::Arc;
 
-use radius_sequencer_sdk::{
-    json_rpc::{types::RpcParameter, RpcError},
-    signature::Signature,
-};
+use radius_sequencer_sdk::json_rpc::{types::RpcParameter, RpcError};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    address::Address, error::Error, state::AppState, types::prelude::*, util::health_check,
-};
+use crate::{error::Error, state::AppState, types::prelude::*, util::health_check};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct AddRollupMessage {
@@ -31,16 +26,11 @@ impl AddRollup {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<AddRollup>()?;
 
-        // let platform_address = parameter
-        //     .message
-        //     .address
-        //     .get_platform_address(parameter.message.platform)?;
-
         // // verify siganture
         // parameter.signature.verify_message(
         //     parameter.message.platform.into(),
         //     &parameter.message,
-        //     platform_address,
+        //     parameter.message.address.as_ref(),
         // )?;
 
         let sequencing_key = (
@@ -54,12 +44,6 @@ impl AddRollup {
             .get(&sequencing_key)
             .ok_or(Error::FailedToGetSequencingInfo)?;
 
-        //
-        let platform_address = parameter
-            .message
-            .address
-            .get_platform_address(parameter.message.platform)?;
-
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(_payload) => {
                 let publisher = context.get_publisher(&sequencing_key).await?;
@@ -72,7 +56,7 @@ impl AddRollup {
                 // check if the sequencer is registered in the contract
                 sequencer_list
                     .iter()
-                    .find(|&address| platform_address == address);
+                    .find(|&address| parameter.message.address == address);
             }
             _ => {}
         }

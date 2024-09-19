@@ -1,4 +1,4 @@
-use crate::{address::Address, types::prelude::*};
+use crate::types::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SequencerNodeInfoModel;

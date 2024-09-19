@@ -3,7 +3,9 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    address::Address, rpc::prelude::*, state::AppState, types::prelude::SequencerNodeInfoModel,
+    rpc::prelude::*,
+    state::AppState,
+    types::prelude::{Address, SequencerNodeInfoModel},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
