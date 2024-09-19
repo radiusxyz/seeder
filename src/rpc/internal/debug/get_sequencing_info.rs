@@ -1,13 +1,4 @@
-use std::sync::Arc;
-
-use serde::{Deserialize, Serialize};
-
-use crate::{
-    error::Error,
-    rpc::prelude::*,
-    state::AppState,
-    types::prelude::{Platform, SequencingInfoPayload, SequencingInfosModel, ServiceProvider},
-};
+use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfo {
@@ -27,7 +18,8 @@ impl GetSequencingInfo {
         parameter: RpcParameter,
         _context: Arc<AppState>,
     ) -> Result<GetSequencingInfoResponse, RpcError> {
-        let parameter = parameter.parse::<GetSequencingInfo>()?;
+        let parameter = parameter.parse::<Self>()?;
+
         let sequencing_key = (parameter.platform, parameter.service_provider);
 
         let sequencing_info_payload = SequencingInfosModel::get()?

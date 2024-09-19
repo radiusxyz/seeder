@@ -1,4 +1,4 @@
-use crate::{error::Error, rpc::prelude::*, state::AppState, types::*};
+use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterSequencerMessage {
@@ -18,7 +18,7 @@ impl DeregisterSequencer {
     pub const METHOD_NAME: &'static str = "deregister_sequencer";
 
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
-        let parameter = parameter.parse::<DeregisterSequencer>()?;
+        let parameter = parameter.parse::<Self>()?;
 
         // // verify siganture
         // parameter.signature.verify_message(

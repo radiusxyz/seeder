@@ -1,4 +1,4 @@
-use crate::{rpc::prelude::*, state::AppState, types::prelude::*};
+use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetExecutorRpcUrlList {
@@ -17,7 +17,7 @@ impl GetExecutorRpcUrlList {
         parameter: RpcParameter,
         _context: Arc<AppState>,
     ) -> Result<GetExecutorRpcUrlListResponse, RpcError> {
-        let parameter = parameter.parse::<GetExecutorRpcUrlList>()?;
+        let parameter = parameter.parse::<Self>()?;
 
         let executor_rpc_url_list: Vec<(Address, Option<String>)> = parameter
             .executor_address_list

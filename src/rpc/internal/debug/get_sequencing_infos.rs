@@ -1,12 +1,4 @@
-use std::sync::Arc;
-
-use serde::{Deserialize, Serialize};
-
-use crate::{
-    rpc::prelude::*,
-    state::AppState,
-    types::prelude::{Platform, SequencingInfoPayload, SequencingInfosModel, ServiceProvider},
-};
+use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfos;

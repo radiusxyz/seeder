@@ -1,9 +1,4 @@
-use std::sync::Arc;
-
-use radius_sequencer_sdk::json_rpc::{types::RpcParameter, RpcError};
-use serde::{Deserialize, Serialize};
-
-use crate::{error::Error, state::AppState, types::prelude::*, util::health_check};
+use crate::{rpc::prelude::*, util::health_check};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct RegisterSequencerMessage {
@@ -24,7 +19,7 @@ impl RegisterSequencer {
     pub const METHOD_NAME: &'static str = "register_sequencer";
 
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
-        let parameter = parameter.parse::<RegisterSequencer>()?;
+        let parameter = parameter.parse::<Self>()?;
 
         // // verify siganture
         // parameter.signature.verify_message(

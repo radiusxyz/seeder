@@ -1,17 +1,4 @@
-use std::sync::Arc;
-
-use radius_sequencer_sdk::liveness_radius::publisher::Publisher;
-use serde::{Deserialize, Serialize};
-
-use crate::{
-    error::Error,
-    rpc::prelude::*,
-    state::AppState,
-    types::prelude::{
-        LivenessEthereum, LivenessLocal, Platform, SequencingInfoPayload, SequencingInfosModel,
-        ServiceProvider,
-    },
-};
+use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(try_from = "SequencingInfo")]
@@ -61,7 +48,7 @@ impl AddSequencingInfo {
     pub const METHOD_NAME: &'static str = "add_sequencing_info";
 
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
-        let parameter = parameter.parse::<AddSequencingInfo>()?;
+        let parameter = parameter.parse::<Self>()?;
 
         tracing::info!("add_sequencing_info: {:?}", parameter);
 

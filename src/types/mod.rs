@@ -2,10 +2,10 @@ mod cli;
 mod rollup;
 mod sequencer;
 mod sequencing;
-pub(crate) mod prelude {
+mod prelude {
     pub use radius_sequencer_sdk::{
         kvstore::{kvstore, KvStoreError, Lock},
-        signature::{Address, Signature},
+        signature::Address,
     };
     pub use serde::{Deserialize, Serialize};
 

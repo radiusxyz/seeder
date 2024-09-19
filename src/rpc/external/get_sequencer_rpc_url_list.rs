@@ -1,4 +1,4 @@
-use crate::{rpc::prelude::*, state::AppState, types::*};
+use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlList {
@@ -17,7 +17,7 @@ impl GetSequencerRpcUrlList {
         parameter: RpcParameter,
         _context: Arc<AppState>,
     ) -> Result<GetSequencerRpcUrlListResponse, RpcError> {
-        let parameter = parameter.parse::<GetSequencerRpcUrlList>()?;
+        let parameter = parameter.parse::<Self>()?;
 
         let sequencer_rpc_url_list: Vec<(Address, Option<String>)> = parameter
             .sequencer_address_list

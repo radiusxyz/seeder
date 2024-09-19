@@ -1,4 +1,4 @@
-use crate::{error::Error, rpc::prelude::*, state::AppState, types::*};
+use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct GetSequencerRpcUrlListAtBlockHeigthMessage {
@@ -28,7 +28,7 @@ impl GetSequencerRpcUrlListAtBlockHeight {
         parameter: RpcParameter,
         context: Arc<AppState>,
     ) -> Result<GetSequencerRpcUrlListAtBlockHeighResponse, RpcError> {
-        let parameter = parameter.parse::<GetSequencerRpcUrlListAtBlockHeight>()?;
+        let parameter = parameter.parse::<Self>()?;
 
         tracing::info!(
             "get_sequencer_rpc_url_list_for_rollup: {:?}",
