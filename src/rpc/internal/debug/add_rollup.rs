@@ -57,7 +57,7 @@ impl AddRollup {
         }
 
         // health check
-        health_check(parameter.message.rpc_url.as_str()).await?;
+        health_check(&parameter.message.rpc_url).await?;
 
         match RollupNodeInfoModel::get_mut(&parameter.message.address.clone()) {
             Ok(mut rollup_node_info) => {

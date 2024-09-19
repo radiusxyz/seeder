@@ -5,7 +5,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     error::Error,
-    types::prelude::{Platform, ServiceProvider},
+    types::{Platform, ServiceProvider},
 };
 
 pub struct AppState {

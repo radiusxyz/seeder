@@ -35,61 +35,25 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             parameter.message.cluster_id
         );
 
-        // // verify siganture
-        // parameter.signature.verify_message(
-        //     parameter.message.platform.into(),
-        //     &parameter.message,
-        //     parameter.message.address.as_ref(),
-        // )?;
-
         let sequencing_key = (
             parameter.message.platform,
             parameter.message.service_provider,
         );
 
-        let sequencing_info = SequencingInfosModel::get()?;
-        let sequencing_info_payload = sequencing_info
-            .sequencing_infos()
-            .get(&sequencing_key)
-            .ok_or(Error::FailedToGetSequencingInfo)?;
-
-        match sequencing_info_payload {
-            SequencingInfoPayload::Ethereum(_payload) => {
-                let publisher = context.get_publisher(&sequencing_key).await?;
-
-                let block_number = publisher.get_block_number().await?;
-                let sequencer_list = publisher
-                    .get_sequencer_list(&parameter.message.cluster_id, block_number)
-                    .await?;
-
-                // check if the sequencer is registered in the contract
-                sequencer_list
-                    .iter()
-                    .find(|&&address| parameter.message.address == address)
-                    .ok_or(Error::UnRegisteredFromContract)?;
-            }
-            _ => {}
-        }
-
         let publisher = context.get_publisher(&sequencing_key).await?;
-        let sequencer_list = publisher
-            .get_sequencer_list(
-                &parameter.message.cluster_id,
-                parameter.message.block_height,
-            )
-            .await?;
+        let block_number = publisher.get_block_number().await?;
 
-        let chain_type =
-            radius_sequencer_sdk::signature::Platform::from(parameter.message.platform);
+        let sequencer_list = publisher
+            .get_sequencer_list(&parameter.message.cluster_id, block_number)
+            .await?;
 
         let rpc_url_list: Vec<(Address, Option<String>)> = sequencer_list
             .into_iter()
-            .filter_map(|address| {
-                let address = Address::from_slice(chain_type, address.as_ref()).ok()?;
+            .map(|address| {
+                let address = Address::from(address.as_slice().to_vec());
+                let rpc_url = SequencerNodeInfoModel::get(&address).ok();
 
-                SequencerNodeInfoModel::get(&address)
-                    .ok()
-                    .map(|sequencer| (address, sequencer.rpc_url))
+                (address, rpc_url)
             })
             .collect();
 

@@ -22,11 +22,7 @@ impl GetSequencerRpcUrlList {
         let sequencer_rpc_url_list: Vec<(Address, Option<String>)> = parameter
             .sequencer_address_list
             .into_iter()
-            .filter_map(|address| {
-                SequencerNodeInfoModel::get(&address)
-                    .ok()
-                    .map(|sequencer| (address, sequencer.rpc_url))
-            })
+            .map(|address| (address.clone(), SequencerNodeInfoModel::get(&address).ok()))
             .collect();
 
         Ok(GetSequencerRpcUrlListResponse {

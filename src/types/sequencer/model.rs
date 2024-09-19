@@ -4,28 +4,23 @@ use crate::types::prelude::*;
 pub struct SequencerNodeInfoModel;
 
 impl SequencerNodeInfoModel {
-    pub const ID: &'static str = stringify!(SequencerModel);
+    pub const ID: &'static str = stringify!(SequencerNodeInfoModel);
 
-    pub fn put(
-        address: &Address,
-        sequencer_node_info: &SequencerNodeInfo,
-    ) -> Result<(), KvStoreError> {
+    pub fn put(address: &Address, sequencer_rpc_url: &String) -> Result<(), KvStoreError> {
         let key = (Self::ID, address);
-        kvstore()?.put(&key, sequencer_node_info)
+
+        kvstore()?.put(&key, sequencer_rpc_url)
     }
 
-    pub fn get(address: &Address) -> Result<SequencerNodeInfo, KvStoreError> {
+    pub fn get(address: &Address) -> Result<String, KvStoreError> {
         let key = (Self::ID, address);
+
         kvstore()?.get(&key)
-    }
-
-    pub fn get_mut(address: &Address) -> Result<Lock<SequencerNodeInfo>, KvStoreError> {
-        let key = (Self::ID, address);
-        kvstore()?.get_mut(&key)
     }
 
     pub fn delete(address: &Address) -> Result<(), KvStoreError> {
         let key = (Self::ID, address);
+
         kvstore()?.delete(&key)
     }
 }

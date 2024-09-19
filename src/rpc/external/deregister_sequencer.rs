@@ -20,29 +20,26 @@ impl DeregisterSequencer {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Self>()?;
 
-        // // verify siganture
-        // parameter.signature.verify_message(
-        //     parameter.message.platform.into(),
-        //     &parameter.message,
-        //     parameter.message.address.as_ref(),
-        // )?;
+        // verify siganture
+        parameter.signature.verify_message(
+            parameter.message.platform.try_into()?,
+            &parameter.message,
+            &parameter.message.address,
+        )?;
 
-        let sequencing_key = (
-            parameter.message.platform,
-            parameter.message.service_provider,
-        );
+        match parameter.message.platform {
+            Platform::Ethereum => {
+                let sequencing_key = (
+                    parameter.message.platform,
+                    parameter.message.service_provider,
+                );
 
-        let sequencing_info = SequencingInfosModel::get()?;
-        let sequencing_info_payload = sequencing_info
-            .sequencing_infos()
-            .get(&sequencing_key)
-            .ok_or(Error::FailedToGetSequencingInfo)?;
-
-        match sequencing_info_payload {
-            SequencingInfoPayload::Ethereum(_payload) => {
                 let publisher = context.get_publisher(&sequencing_key).await?;
-
-                let block_number = publisher.get_block_number().await?;
+                let block_margin = publisher.get_block_margin().await?.try_into()?;
+                let block_number = publisher
+                    .get_block_number()
+                    .await?
+                    .wrapping_sub(block_margin);
                 let sequencer_list = publisher
                     .get_sequencer_list(&parameter.message.cluster_id, block_number)
                     .await?;

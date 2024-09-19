@@ -9,16 +9,16 @@ pub enum Platform {
     Ethereum,
     Local,
 }
+impl TryInto<radius_sequencer_sdk::signature::ChainType> for Platform {
+    type Error = crate::error::Error;
 
-impl From<Platform> for radius_sequencer_sdk::signature::Platform {
-    fn from(value: Platform) -> Self {
-        match value {
-            Platform::Ethereum => Self::Ethereum,
-            Platform::Local => Self::Ethereum, // TODO:
+    fn try_into(self) -> Result<radius_sequencer_sdk::signature::ChainType, Self::Error> {
+        match self {
+            Self::Ethereum => Ok(radius_sequencer_sdk::signature::ChainType::Ethereum),
+            Self::Local => Ok(radius_sequencer_sdk::signature::ChainType::Ethereum),
         }
     }
 }
-
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
 pub enum ServiceProvider {

@@ -62,7 +62,7 @@ impl AddSequencingInfo {
             .is_some()
         {
             tracing::error!("SequencingInfo already exists: {:?}", sequencing_key);
-            return Err(Error::ExistSequencingInfo.into());
+            return Err(Error::SequencingInfoAlreadyExists.into());
         }
 
         sequencing_infos.insert(sequencing_key.clone(), parameter.payload.clone());
