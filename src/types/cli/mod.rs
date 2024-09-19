@@ -3,6 +3,7 @@ mod config_option;
 mod config_path;
 
 use clap::{Parser, Subcommand};
+pub use config::Config;
 pub use config_option::ConfigOption;
 pub use config_path::ConfigPath;
 use serde::{Deserialize, Serialize};

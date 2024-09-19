@@ -12,6 +12,7 @@ mod prelude {
     pub use crate::types::*;
 }
 
+pub use cli::*;
 pub use rollup::*;
 pub use sequencer::*;
 pub use sequencing::*;

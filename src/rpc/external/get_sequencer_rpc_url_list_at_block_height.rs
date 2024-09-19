@@ -17,7 +17,7 @@ pub struct GetSequencerRpcUrlListAtBlockHeight {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlListAtBlockHeighResponse {
-    pub rpc_url_list: Vec<(Address, Option<String>)>,
+    pub rpc_url_list: Vec<(String, Option<String>)>,
     pub block_height: u64,
 }
 
@@ -47,13 +47,13 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             .get_sequencer_list(&parameter.message.cluster_id, block_number)
             .await?;
 
-        let rpc_url_list: Vec<(Address, Option<String>)> = sequencer_list
+        let rpc_url_list: Vec<(String, Option<String>)> = sequencer_list
             .into_iter()
             .map(|address| {
                 let address = Address::from(address.as_slice().to_vec());
                 let rpc_url = SequencerNodeInfoModel::get(&address).ok();
 
-                (address, rpc_url)
+                (address.to_string(), rpc_url)
             })
             .collect();
 

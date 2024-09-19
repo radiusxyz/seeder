@@ -5,6 +5,7 @@ use radius_sequencer_sdk::{
     json_rpc::RpcServer, kvstore::KvStore, liveness_radius::publisher::Publisher,
 };
 use seeder::{error::Error, rpc::*, state::AppState, types::*};
+use tokio::task::JoinHandle;
 use tracing::info;
 
 #[tokio::main]
@@ -20,43 +21,21 @@ async fn main() -> Result<(), Error> {
         } => {
             let config = Config::load(config_option)?;
 
-            let seeder_rpc_url = config.seeder_rpc_url();
-
             // Initialize a local database.
             KvStore::new(config.path().join(DATABASE_DIR_NAME))?.init();
 
             let app_state = initialize_app_state().await?;
-
             tracing::info!("Successfully initialized app state.");
 
-            let rpc_server_handle = RpcServer::new(app_state)
-                .register_rpc_method(AddRollup::METHOD_NAME, AddRollup::handler)?
-                .register_rpc_method(
-                    DeregisterSequencer::METHOD_NAME,
-                    DeregisterSequencer::handler,
-                )?
-                .register_rpc_method(
-                    GetExecutorRpcUrlList::METHOD_NAME,
-                    GetExecutorRpcUrlList::handler,
-                )?
-                .register_rpc_method(GetSequencerRpcUrl::METHOD_NAME, GetSequencerRpcUrl::handler)?
-                .register_rpc_method(
-                    GetSequencerRpcUrlList::METHOD_NAME,
-                    GetSequencerRpcUrlList::handler,
-                )?
-                .register_rpc_method(
-                    GetSequencerRpcUrlListAtBlockHeight::METHOD_NAME,
-                    GetSequencerRpcUrlListAtBlockHeight::handler,
-                )?
-                .register_rpc_method(RegisterSequencer::METHOD_NAME, RegisterSequencer::handler)?
-                .register_rpc_method(AddSequencingInfo::METHOD_NAME, AddSequencingInfo::handler)?
-                .register_rpc_method(GetSequencingInfo::METHOD_NAME, GetSequencingInfo::handler)?
-                .register_rpc_method(GetSequencingInfos::METHOD_NAME, GetSequencingInfos::handler)?
-                .init(seeder_rpc_url)
-                .await?;
+            initialize_internal_rpc_server(&app_state, config.seeder_external_rpc_url()).await?;
 
-            info!("Seeder server starting at {}", seeder_rpc_url);
-            rpc_server_handle.stopped().await;
+            let server_handle =
+                initialize_external_rpc_server(&app_state, config.seeder_internal_rpc_url())
+                    .await?;
+
+            info!("Seeder server started");
+
+            server_handle.await.unwrap();
         }
     }
 
@@ -91,4 +70,68 @@ async fn initialize_app_state() -> Result<AppState, Error> {
     }
 
     Ok(app_state)
+}
+
+async fn initialize_internal_rpc_server(
+    context: &AppState,
+    seeder_internal_rpc_url: &String,
+) -> Result<(), Error> {
+    // Initialize the seeder internal RPC server.
+    let internal_rpc_server = RpcServer::new(context.clone())
+        .register_rpc_method(AddRollup::METHOD_NAME, AddRollup::handler)?
+        .register_rpc_method(AddSequencingInfo::METHOD_NAME, AddSequencingInfo::handler)?
+        .register_rpc_method(GetSequencingInfo::METHOD_NAME, GetSequencingInfo::handler)?
+        .register_rpc_method(GetSequencingInfos::METHOD_NAME, GetSequencingInfos::handler)?
+        .init(seeder_internal_rpc_url)
+        .await?;
+
+    tracing::info!(
+        "Successfully started the seeder internal RPC server: {}",
+        seeder_internal_rpc_url
+    );
+
+    tokio::spawn(async move {
+        internal_rpc_server.stopped().await;
+    });
+
+    Ok(())
+}
+
+async fn initialize_external_rpc_server(
+    context: &AppState,
+    seeder_external_rpc_url: &String,
+) -> Result<JoinHandle<()>, Error> {
+    // Initialize the seeder internal RPC server.
+    let internal_rpc_server = RpcServer::new(context.clone())
+        .register_rpc_method(
+            DeregisterSequencer::METHOD_NAME,
+            DeregisterSequencer::handler,
+        )?
+        .register_rpc_method(
+            GetExecutorRpcUrlList::METHOD_NAME,
+            GetExecutorRpcUrlList::handler,
+        )?
+        .register_rpc_method(GetSequencerRpcUrl::METHOD_NAME, GetSequencerRpcUrl::handler)?
+        .register_rpc_method(
+            GetSequencerRpcUrlList::METHOD_NAME,
+            GetSequencerRpcUrlList::handler,
+        )?
+        .register_rpc_method(
+            GetSequencerRpcUrlListAtBlockHeight::METHOD_NAME,
+            GetSequencerRpcUrlListAtBlockHeight::handler,
+        )?
+        .register_rpc_method(RegisterSequencer::METHOD_NAME, RegisterSequencer::handler)?
+        .init(seeder_external_rpc_url)
+        .await?;
+
+    tracing::info!(
+        "Successfully started the seeder external RPC server: {}",
+        seeder_external_rpc_url
+    );
+
+    let server_handle = tokio::spawn(async move {
+        internal_rpc_server.stopped().await;
+    });
+
+    Ok(server_handle)
 }

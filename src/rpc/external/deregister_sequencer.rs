@@ -20,12 +20,12 @@ impl DeregisterSequencer {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Self>()?;
 
-        // verify siganture
-        parameter.signature.verify_message(
-            parameter.message.platform.try_into()?,
-            &parameter.message,
-            &parameter.message.address,
-        )?;
+        // // verify siganture
+        // parameter.signature.verify_message(
+        //     parameter.message.platform.try_into()?,
+        //     &parameter.message,
+        //     &parameter.message.address,
+        // )?;
 
         match parameter.message.platform {
             Platform::Ethereum => {
@@ -50,7 +50,7 @@ impl DeregisterSequencer {
                     .find(|&&address| parameter.message.address == address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
-            _ => {}
+            Platform::Local => {}
         }
 
         SequencerNodeInfoModel::delete(&parameter.message.address)?;

@@ -7,7 +7,7 @@ pub struct GetExecutorRpcUrlList {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetExecutorRpcUrlListResponse {
-    pub executor_rpc_url_list: Vec<(Address, Option<String>)>,
+    pub executor_rpc_url_list: Vec<(String, Option<String>)>,
 }
 
 impl GetExecutorRpcUrlList {
@@ -19,14 +19,10 @@ impl GetExecutorRpcUrlList {
     ) -> Result<GetExecutorRpcUrlListResponse, RpcError> {
         let parameter = parameter.parse::<Self>()?;
 
-        let executor_rpc_url_list: Vec<(Address, Option<String>)> = parameter
+        let executor_rpc_url_list: Vec<(String, Option<String>)> = parameter
             .executor_address_list
             .into_iter()
-            .filter_map(|address| {
-                RollupNodeInfoModel::get(&address)
-                    .ok()
-                    .map(|sequencer| (address, sequencer.rpc_url))
-            })
+            .map(|address| (address.to_string(), RollupNodeInfoModel::get(&address).ok()))
             .collect();
 
         Ok(GetExecutorRpcUrlListResponse {

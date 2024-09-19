@@ -10,7 +10,8 @@ use crate::{
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Config {
     path: PathBuf,
-    seeder_rpc_url: String,
+    seeder_external_rpc_url: String,
+    seeder_internal_rpc_url: String,
 }
 
 impl Config {
@@ -38,7 +39,8 @@ impl Config {
 
         Ok(Config {
             path: config_path,
-            seeder_rpc_url: merged_config_option.seeder_rpc_url.unwrap(),
+            seeder_external_rpc_url: merged_config_option.seeder_external_rpc_url.unwrap(),
+            seeder_internal_rpc_url: merged_config_option.seeder_internal_rpc_url.unwrap(),
         })
     }
 
@@ -46,7 +48,11 @@ impl Config {
         &self.path
     }
 
-    pub fn seeder_rpc_url(&self) -> &String {
-        &self.seeder_rpc_url
+    pub fn seeder_external_rpc_url(&self) -> &String {
+        &self.seeder_external_rpc_url
+    }
+
+    pub fn seeder_internal_rpc_url(&self) -> &String {
+        &self.seeder_internal_rpc_url
     }
 }

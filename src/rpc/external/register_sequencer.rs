@@ -21,20 +21,19 @@ impl RegisterSequencer {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Self>()?;
 
-        // verify siganture
-        parameter.signature.verify_message(
-            parameter.message.platform.try_into()?,
-            &parameter.message,
-            &parameter.message.address,
-        )?;
-
-        let sequencing_key = (
-            parameter.message.platform,
-            parameter.message.service_provider,
-        );
+        // // verify siganture
+        // parameter.signature.verify_message(
+        //     parameter.message.platform.try_into()?,
+        //     &parameter.message,
+        //     &parameter.message.address,
+        // )?;
 
         match parameter.message.platform {
             Platform::Ethereum => {
+                let sequencing_key = (
+                    parameter.message.platform,
+                    parameter.message.service_provider,
+                );
                 let publisher = context.get_publisher(&sequencing_key).await?;
                 let block_number = publisher.get_block_number().await?;
 

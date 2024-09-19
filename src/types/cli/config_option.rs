@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use super::ConfigPath;
 
-const DEFAULT_SEEDER_RPC_URL: &str = "http://127.0.0.1:6000";
+const DEFAULT_SEEDER_EXTERNAL_RPC_URL: &str = "http://127.0.0.1:6000";
+const DEFAULT_SEEDER_INTERNAL_RPC_URL: &str = "http://127.0.0.1:6001";
 
 #[derive(Debug, Deserialize, Parser, Serialize)]
 pub struct ConfigOption {
@@ -13,16 +14,21 @@ pub struct ConfigOption {
     #[clap(long = "path")]
     pub path: Option<PathBuf>,
 
-    #[doc = "Set the seeder rpc url"]
-    #[clap(long = "seeder-rpc-url")]
-    pub seeder_rpc_url: Option<String>,
+    #[doc = "Set the seeder external rpc url"]
+    #[clap(long = "seeder-external-rpc-url")]
+    pub seeder_external_rpc_url: Option<String>,
+
+    #[doc = "Set the seeder internal rpc url"]
+    #[clap(long = "seeder-internal-rpc-url")]
+    pub seeder_internal_rpc_url: Option<String>,
 }
 
 impl Default for ConfigOption {
     fn default() -> Self {
         Self {
             path: Some(ConfigPath::default().as_ref().into()),
-            seeder_rpc_url: Some(DEFAULT_SEEDER_RPC_URL.into()),
+            seeder_external_rpc_url: Some(DEFAULT_SEEDER_EXTERNAL_RPC_URL.into()),
+            seeder_internal_rpc_url: Some(DEFAULT_SEEDER_INTERNAL_RPC_URL.into()),
         }
     }
 }
@@ -31,8 +37,19 @@ impl ConfigOption {
     pub fn get_toml_string(&self) -> String {
         let mut toml_string = String::new();
 
-        set_toml_comment(&mut toml_string, "Set seeder rpc url");
-        set_toml_name_value(&mut toml_string, "seeder_rpc_url", &self.seeder_rpc_url);
+        set_toml_comment(&mut toml_string, "Set seeder external rpc url");
+        set_toml_name_value(
+            &mut toml_string,
+            "seeder_external_rpc_url",
+            &self.seeder_external_rpc_url,
+        );
+
+        set_toml_comment(&mut toml_string, "Set seeder internal rpc url");
+        set_toml_name_value(
+            &mut toml_string,
+            "seeder_internal_rpc_url",
+            &self.seeder_internal_rpc_url,
+        );
 
         toml_string
     }
@@ -42,8 +59,14 @@ impl ConfigOption {
             self.path.clone_from(&other.path)
         }
 
-        if other.seeder_rpc_url.is_some() {
-            self.seeder_rpc_url.clone_from(&other.seeder_rpc_url)
+        if other.seeder_external_rpc_url.is_some() {
+            self.seeder_external_rpc_url
+                .clone_from(&other.seeder_external_rpc_url)
+        }
+
+        if other.seeder_internal_rpc_url.is_some() {
+            self.seeder_internal_rpc_url
+                .clone_from(&other.seeder_internal_rpc_url)
         }
 
         self
