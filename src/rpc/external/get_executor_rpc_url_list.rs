@@ -22,7 +22,12 @@ impl GetExecutorRpcUrlList {
         let executor_rpc_url_list: Vec<(String, Option<String>)> = parameter
             .executor_address_list
             .into_iter()
-            .map(|address| (address.to_string(), RollupNodeInfoModel::get(&address).ok()))
+            .map(|address| {
+                (
+                    address.as_hex_string(),
+                    RollupNodeInfoModel::get(&address).ok(),
+                )
+            })
             .collect();
 
         Ok(GetExecutorRpcUrlListResponse {
