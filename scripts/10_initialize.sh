@@ -3,7 +3,7 @@ SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 source $SCRIPT_PATH/env.sh
 
 echo "add_sequencing_info"
-curl --location $SEEDER_RPC_URL \
+curl --location $SEEDER_INTERNAL_RPC_URL \
 --header 'Content-Type: application/json' \
 --data '{
   "jsonrpc": "2.0",
