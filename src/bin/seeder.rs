@@ -46,24 +46,30 @@ async fn initialize_app_state() -> Result<AppState, Error> {
     // init app state
     let app_state = AppState::new(HashMap::new());
 
-    let sequencing_infos = SequencingInfosModel::get_mut_or_default()?;
+    let sequencing_info_list = SequencingInfoListModel::get_mut_or_default()?;
 
-    for (key, sequencing_info_payload) in sequencing_infos.sequencing_infos() {
+    for (platform, service_provider) in sequencing_info_list.iter() {
+        let sequencing_info_key = (*platform, *service_provider);
+        let sequencing_info_payload =
+            SequencingInfoPayloadModel::get(*platform, *service_provider)?;
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(payload) => {
                 // init publisher
-                if app_state.get_publisher(key).await.is_ok() {
+                if app_state.get_publisher(&sequencing_info_key).await.is_ok() {
                     continue;
                 }
 
+                // TODO: remove hard-coded value
                 let publisher = Publisher::new(
-                    payload.rpc_url.clone(),
+                    payload.liveness_rpc_url.clone(),
                     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
                     payload.contract_address.clone(),
                 )
                 .map_err(Error::InitializePublisher)?;
 
-                app_state.add_publisher(*key, Arc::new(publisher)).await;
+                app_state
+                    .add_publisher(sequencing_info_key, Arc::new(publisher))
+                    .await;
             }
             _ => {}
         }

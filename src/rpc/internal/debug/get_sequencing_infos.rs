@@ -15,11 +15,21 @@ impl GetSequencingInfos {
         _parameter: RpcParameter,
         _context: Arc<AppState>,
     ) -> Result<GetSequencingInfosResponse, RpcError> {
-        let sequencing_infos = SequencingInfosModel::get()?
-            .sequencing_infos()
-            .iter()
-            .map(|(k, v)| (*k, v.clone()))
-            .collect();
+        let sequencing_info_list = SequencingInfoListModel::get()?;
+
+        let sequencing_infos: Vec<((Platform, ServiceProvider), SequencingInfoPayload)> =
+            sequencing_info_list
+                .iter()
+                .filter_map(|(platform, service_provider)| {
+                    if let Some(payload) =
+                        SequencingInfoPayloadModel::get(*platform, *service_provider).ok()
+                    {
+                        Some(((*platform, *service_provider), payload))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
 
         Ok(GetSequencingInfosResponse { sequencing_infos })
     }

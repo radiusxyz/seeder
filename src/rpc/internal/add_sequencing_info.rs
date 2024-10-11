@@ -1,47 +1,12 @@
+use radius_sequencer_sdk::signature::PrivateKeySigner;
+
 use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(try_from = "SequencingInfo")]
 pub struct AddSequencingInfo {
     pub platform: Platform,
     pub service_provider: ServiceProvider,
     pub payload: SequencingInfoPayload,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-struct SequencingInfo {
-    platform: Platform,
-    service_provider: ServiceProvider,
-    payload: serde_json::Value,
-}
-
-impl TryFrom<SequencingInfo> for AddSequencingInfo {
-    type Error = Error;
-
-    fn try_from(value: SequencingInfo) -> Result<Self, Self::Error> {
-        match value.platform {
-            Platform::Ethereum => {
-                let payload: LivenessEthereum =
-                    serde_json::from_value(value.payload).map_err(Error::Deserialize)?;
-
-                Ok(Self {
-                    platform: value.platform,
-                    service_provider: value.service_provider,
-                    payload: SequencingInfoPayload::Ethereum(payload),
-                })
-            }
-            Platform::Local => {
-                let payload: LivenessLocal =
-                    serde_json::from_value(value.payload).map_err(Error::Deserialize)?;
-
-                Ok(Self {
-                    platform: value.platform,
-                    service_provider: value.service_provider,
-                    payload: SequencingInfoPayload::Local(payload),
-                })
-            }
-        }
-    }
 }
 
 impl AddSequencingInfo {
@@ -50,25 +15,21 @@ impl AddSequencingInfo {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Self>()?;
 
-        tracing::info!("add_sequencing_info: {:?}", parameter);
-
-        let mut sequencing_infos = SequencingInfosModel::get_mut()?;
+        // Save `LivenessClient` metadata.
+        let mut sequencing_info_list = SequencingInfoListModel::get_mut_or_default()?;
 
         let sequencing_key = (parameter.platform, parameter.service_provider);
 
-        if sequencing_infos
-            .sequencing_infos()
-            .get(&sequencing_key)
-            .is_some()
-        {
-            tracing::error!("SequencingInfo already exists: {:?}", sequencing_key);
-            return Err(Error::SequencingInfoAlreadyExists.into());
-        }
+        sequencing_info_list.insert(parameter.platform, parameter.service_provider);
+        sequencing_info_list.update()?;
 
-        sequencing_infos.insert(sequencing_key.clone(), parameter.payload.clone());
-        sequencing_infos.update()?;
+        SequencingInfoPayloadModel::put(
+            parameter.platform,
+            parameter.service_provider,
+            &parameter.payload,
+        )?;
 
-        match parameter.payload {
+        match &parameter.payload {
             SequencingInfoPayload::Ethereum(payload) => {
                 if context.get_publisher(&sequencing_key).await.is_ok() {
                     tracing::error!("Publisher already exists: {:?}", sequencing_key);
@@ -76,10 +37,10 @@ impl AddSequencingInfo {
                 }
 
                 let publisher = Publisher::new(
-                    payload.rpc_url,
+                    payload.liveness_rpc_url.clone(),
                     // TODO(jaemin): remove this hard-coded value
                     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-                    payload.contract_address,
+                    payload.contract_address.clone(),
                 )?;
 
                 // add publisher to app state
@@ -87,7 +48,10 @@ impl AddSequencingInfo {
                     .add_publisher(sequencing_key, Arc::new(publisher))
                     .await;
             }
-            _ => {}
+            SequencingInfoPayload::Local(_payload) => {
+                // liveness::local::LivenessClient::new()?;
+                todo!("Implement 'LivenessClient' for local sequencing.");
+            }
         }
 
         Ok(())

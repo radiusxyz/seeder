@@ -2,8 +2,8 @@ use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencingInfo {
-    platform: Platform,
-    service_provider: ServiceProvider,
+    pub platform: Platform,
+    pub service_provider: ServiceProvider,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -18,15 +18,10 @@ impl GetSequencingInfo {
         parameter: RpcParameter,
         _context: Arc<AppState>,
     ) -> Result<GetSequencingInfoResponse, RpcError> {
-        let parameter = parameter.parse::<Self>()?;
+        let parameter = parameter.parse::<GetSequencingInfo>()?;
 
-        let sequencing_key = (parameter.platform, parameter.service_provider);
-
-        let sequencing_info_payload = SequencingInfosModel::get()?
-            .sequencing_infos()
-            .get(&sequencing_key)
-            .ok_or(Error::FailedToGetSequencingInfo)?
-            .clone();
+        let sequencing_info_payload =
+            SequencingInfoPayloadModel::get(parameter.platform, parameter.service_provider)?;
 
         Ok(GetSequencingInfoResponse {
             sequencing_info_payload,

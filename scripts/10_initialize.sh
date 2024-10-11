@@ -12,8 +12,8 @@ curl --location $SEEDER_INTERNAL_RPC_URL \
     "platform": "'"$PLATFORM"'",
     "service_provider": "'"$SERVICE_PROVIDER"'",
     "payload": {
-      "rpc_url": "'"$LIVENESS_RPC_URL"'",
-      "websocket_url": "'"$LIVENESS_WS_URL"'",
+      "liveness_rpc_url": "'"$LIVENESS_RPC_URL"'",
+      "liveness_websocket_url": "'"$LIVENESS_WS_URL"'",
       "contract_address": "'"$CONTRACT_ADDRESS"'"
     }
   },

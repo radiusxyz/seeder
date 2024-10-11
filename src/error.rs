@@ -25,6 +25,10 @@ pub enum Error {
     FailedToGetPublisher,
     FailedToGetSequencer,
 
+    NotSupportedPlatform,
+    NotSupportedValidationServiceProvider,
+    NotSupportedRollupType,
+
     PublisherAlreadyExists,
     SequencingInfoAlreadyExists,
 
