@@ -25,7 +25,9 @@ impl GetExecutorRpcUrlList {
             .map(|address| {
                 (
                     address.as_hex_string(),
-                    RollupNodeInfoModel::get(&address).ok(),
+                    RollupNodeInfo::get(&address)
+                        .ok()
+                        .map(|node_info| node_info.into_rpc_url()),
                 )
             })
             .collect();

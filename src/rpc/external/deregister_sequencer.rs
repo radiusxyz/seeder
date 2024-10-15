@@ -53,7 +53,7 @@ impl DeregisterSequencer {
             Platform::Local => {}
         }
 
-        SequencerNodeInfoModel::delete(&parameter.message.address)?;
+        SequencerNodeInfo::delete(&parameter.message.address)?;
 
         Ok(())
     }

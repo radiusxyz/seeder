@@ -23,7 +23,7 @@ impl AddRollup {
 
         // verify siganture
         parameter.signature.verify_message(
-            parameter.message.platform.try_into()?,
+            parameter.message.platform.into(),
             &parameter.message,
             &parameter.message.address,
         )?;
@@ -54,7 +54,10 @@ impl AddRollup {
         // health check
         health_check(&parameter.message.rpc_url).await?;
 
-        RollupNodeInfoModel::put(&parameter.message.address, &parameter.message.rpc_url)?;
+        let rollup_node_info =
+            RollupNodeInfo::new(parameter.message.address, parameter.message.rpc_url);
+
+        RollupNodeInfo::put(&rollup_node_info, rollup_node_info.address())?;
 
         Ok(())
     }

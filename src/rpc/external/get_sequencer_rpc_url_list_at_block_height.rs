@@ -51,7 +51,9 @@ impl GetSequencerRpcUrlListAtBlockHeight {
             .into_iter()
             .map(|address| {
                 let address = Address::from(address.as_slice().to_vec());
-                let rpc_url = SequencerNodeInfoModel::get(&address).ok();
+                let rpc_url = SequencerNodeInfo::get(&address)
+                    .map(|node_info| node_info.into_rpc_url())
+                    .ok();
 
                 (address.as_hex_string(), rpc_url)
             })

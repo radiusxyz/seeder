@@ -19,7 +19,9 @@ impl GetSequencerRpcUrl {
     ) -> Result<GetSequencerRpcUrlResponse, RpcError> {
         let parameter = parameter.parse::<Self>()?;
 
-        let sequencer_rpc_url = SequencerNodeInfoModel::get(&parameter.address).ok();
+        let sequencer_rpc_url = SequencerNodeInfo::get(&parameter.address)
+            .map(|node_info| node_info.into_rpc_url())
+            .ok();
 
         Ok(GetSequencerRpcUrlResponse { sequencer_rpc_url })
     }

@@ -44,12 +44,11 @@ async fn initialize_app_state() -> Result<AppState, Error> {
     // init app state
     let app_state = AppState::new(HashMap::new());
 
-    let sequencing_info_list = SequencingInfoListModel::get_mut_or_default()?;
+    let sequencing_info_list = SequencingInfoList::get_mut_or(SequencingInfoList::default)?;
 
     for (platform, service_provider) in sequencing_info_list.iter() {
         let sequencing_info_key = (*platform, *service_provider);
-        let sequencing_info_payload =
-            SequencingInfoPayloadModel::get(*platform, *service_provider)?;
+        let sequencing_info_payload = SequencingInfoPayload::get(*platform, *service_provider)?;
         match sequencing_info_payload {
             SequencingInfoPayload::Ethereum(payload) => {
                 // init publisher

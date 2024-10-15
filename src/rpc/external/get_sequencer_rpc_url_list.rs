@@ -25,7 +25,9 @@ impl GetSequencerRpcUrlList {
             .map(|address| {
                 (
                     address.as_hex_string(),
-                    SequencerNodeInfoModel::get(&address).ok(),
+                    SequencerNodeInfo::get(&address)
+                        .map(|node_info| node_info.into_rpc_url())
+                        .ok(),
                 )
             })
             .collect();

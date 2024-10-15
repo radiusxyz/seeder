@@ -53,7 +53,10 @@ impl RegisterSequencer {
         // health check
         health_check(&parameter.message.rpc_url).await?;
 
-        SequencerNodeInfoModel::put(&parameter.message.address, &parameter.message.rpc_url)?;
+        let sequencer_node_info =
+            SequencerNodeInfo::new(parameter.message.address, parameter.message.rpc_url);
+
+        SequencerNodeInfo::put(&sequencer_node_info, sequencer_node_info.address())?;
 
         Ok(())
     }

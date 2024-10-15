@@ -4,12 +4,10 @@ mod sequencer;
 mod sequencing;
 mod prelude {
     pub use radius_sdk::{
-        kvstore::{kvstore, KvStoreError, Lock},
-        signature::Address,
+        kvstore::Model,
+        signature::{Address, ChainType},
     };
     pub use serde::{Deserialize, Serialize};
-
-    pub use crate::types::*;
 }
 
 pub use cli::*;
