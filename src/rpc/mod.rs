@@ -3,7 +3,7 @@ mod internal;
 mod prelude {
     pub use std::sync::Arc;
 
-    pub use radius_sequencer_sdk::{
+    pub use radius_sdk::{
         json_rpc::{types::*, RpcError},
         liveness_radius::publisher::Publisher,
         signature::{Address, Signature},

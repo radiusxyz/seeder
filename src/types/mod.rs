@@ -3,7 +3,7 @@ mod rollup;
 mod sequencer;
 mod sequencing;
 mod prelude {
-    pub use radius_sequencer_sdk::{
+    pub use radius_sdk::{
         kvstore::{kvstore, KvStoreError, Lock},
         signature::Address,
     };
