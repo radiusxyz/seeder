@@ -27,6 +27,8 @@ impl DeregisterSequencer {
         //     &parameter.message.address,
         // )?;
 
+        tracing::log::info!("Deregister sequencer: {:?}", parameter.message.address);
+
         match parameter.message.platform {
             Platform::Ethereum => {
                 let sequencing_key = (

@@ -22,7 +22,7 @@ async fn main() -> Result<(), Error> {
             // Initialize a local database.
             KvStore::new(config.path().join(DATABASE_DIR_NAME))?.init();
 
-            let app_state = initialize_app_state().await?;
+            let app_state = initialize_app_state(DEFAULT_SIGNING_KEY).await?;
             tracing::info!("Successfully initialized app state.");
 
             initialize_internal_rpc_server(&app_state, config.seeder_external_rpc_url()).await?;
@@ -40,7 +40,7 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-async fn initialize_app_state() -> Result<AppState, Error> {
+async fn initialize_app_state(signing_key: &str) -> Result<AppState, Error> {
     // init app state
     let app_state = AppState::new(HashMap::new());
 
@@ -59,7 +59,7 @@ async fn initialize_app_state() -> Result<AppState, Error> {
                 // TODO: remove hard-coded value
                 let publisher = Publisher::new(
                     payload.liveness_rpc_url.clone(),
-                    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+                    signing_key,
                     payload.contract_address.clone(),
                 )
                 .map_err(Error::InitializePublisher)?;

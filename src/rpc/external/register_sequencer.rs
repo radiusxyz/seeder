@@ -28,6 +28,8 @@ impl RegisterSequencer {
         //     &parameter.message.address,
         // )?;
 
+        tracing::log::info!("Register sequencer: {:?}", parameter.message.address);
+
         match parameter.message.platform {
             Platform::Ethereum => {
                 let sequencing_key = (
