@@ -7,7 +7,7 @@ pub struct GetSequencerRpcUrl {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlResponse {
-    pub sequencer_rpc_url: Option<String>,
+    pub sequencer_rpc_url: (String, Option<(String, String)>),
 }
 
 impl GetSequencerRpcUrl {
@@ -20,8 +20,14 @@ impl GetSequencerRpcUrl {
         let parameter = parameter.parse::<Self>()?;
 
         let sequencer_rpc_url = SequencerNodeInfo::get(&parameter.address)
-            .map(|node_info| node_info.into_rpc_url())
+            .map(|node_info| {
+                (
+                    node_info.external_rpc_url().to_owned(),
+                    node_info.cluster_rpc_url().to_owned(),
+                )
+            })
             .ok();
+        let sequencer_rpc_url = (parameter.address.as_hex_string(), sequencer_rpc_url);
 
         Ok(GetSequencerRpcUrlResponse { sequencer_rpc_url })
     }

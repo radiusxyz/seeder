@@ -20,12 +20,12 @@ impl DeregisterSequencer {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Self>()?;
 
-        // // verify siganture
-        // parameter.signature.verify_message(
-        //     parameter.message.platform.try_into()?,
-        //     &parameter.message,
-        //     &parameter.message.address,
-        // )?;
+        // Verify the message.
+        parameter.signature.verify_message(
+            parameter.message.platform.try_into()?,
+            &parameter.message,
+            &parameter.message.address,
+        )?;
 
         tracing::log::info!("Deregister sequencer: {:?}", parameter.message.address);
 

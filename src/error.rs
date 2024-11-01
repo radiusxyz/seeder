@@ -4,7 +4,7 @@ pub enum Error {
     OpenConfig(std::io::Error),
     ParseConfig(toml::de::Error),
     Database(radius_sdk::kvstore::KvStoreError),
-    JsonRPC(radius_sdk::json_rpc::Error),
+    JsonRPC(radius_sdk::json_rpc::server::RpcServerError),
     SignatureError(radius_sdk::signature::SignatureError),
     SignatureMismatch,
 
@@ -54,8 +54,8 @@ impl From<radius_sdk::kvstore::KvStoreError> for Error {
     }
 }
 
-impl From<radius_sdk::json_rpc::Error> for Error {
-    fn from(value: radius_sdk::json_rpc::Error) -> Self {
+impl From<radius_sdk::json_rpc::server::RpcServerError> for Error {
+    fn from(value: radius_sdk::json_rpc::server::RpcServerError) -> Self {
         Self::JsonRPC(value)
     }
 }

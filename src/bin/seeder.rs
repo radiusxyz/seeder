@@ -1,14 +1,18 @@
 use std::{collections::HashMap, sync::Arc};
 
 use debug::AddRollup;
-use radius_sdk::{json_rpc::RpcServer, kvstore::KvStore, liveness_radius::publisher::Publisher};
+use radius_sdk::{
+    json_rpc::server::RpcServer, kvstore::KvStore, liveness_radius::publisher::Publisher,
+};
 use seeder::{error::Error, rpc::*, state::AppState, types::*};
 use tokio::task::JoinHandle;
-use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt().init();
+    std::panic::set_hook(Box::new(|panic_info| {
+        tracing::error!("{:?}", panic_info);
+    }));
 
     let mut cli = Cli::init();
 
@@ -31,7 +35,7 @@ async fn main() -> Result<(), Error> {
                 initialize_external_rpc_server(&app_state, config.seeder_internal_rpc_url())
                     .await?;
 
-            info!("Seeder server started");
+            tracing::info!("Seeder server started");
 
             server_handle.await.unwrap();
         }
