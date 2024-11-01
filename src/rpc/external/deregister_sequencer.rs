@@ -1,17 +1,17 @@
 use crate::rpc::prelude::*;
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct DeregisterSequencer {
+    message: DeregisterSequencerMessage,
+    signature: Signature,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterSequencerMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
     address: Address,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct DeregisterSequencer {
-    message: DeregisterSequencerMessage,
-    signature: Signature,
 }
 
 impl DeregisterSequencer {

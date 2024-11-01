@@ -1,6 +1,12 @@
 use crate::{rpc::prelude::*, util::health_check};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct RegisterSequencer {
+    message: RegisterSequencerMessage,
+    signature: Signature,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct RegisterSequencerMessage {
     platform: Platform,
     service_provider: ServiceProvider,
@@ -8,12 +14,6 @@ struct RegisterSequencerMessage {
     address: Address,
     external_rpc_url: String,
     cluster_rpc_url: String,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct RegisterSequencer {
-    message: RegisterSequencerMessage,
-    signature: Signature,
 }
 
 impl RegisterSequencer {
