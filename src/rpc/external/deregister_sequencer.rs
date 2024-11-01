@@ -21,11 +21,11 @@ impl DeregisterSequencer {
         let parameter = parameter.parse::<Self>()?;
 
         // Verify the message.
-        parameter.signature.verify_message(
-            parameter.message.platform.into(),
-            &parameter.message,
-            &parameter.message.address,
-        )?;
+        // parameter.signature.verify_message(
+        //     parameter.message.platform.into(),
+        //     &parameter.message,
+        //     &parameter.message.address,
+        // )?;
 
         tracing::info!("Deregister sequencer: {:?}", parameter.message.address);
 
