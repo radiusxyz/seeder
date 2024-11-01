@@ -1,7 +1,7 @@
 use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct GetSequencerRpcUrlListAtBlockHeigthMessage {
+pub struct GetSequencerRpcUrlListAtBlockHeight {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
@@ -10,14 +10,8 @@ struct GetSequencerRpcUrlListAtBlockHeigthMessage {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetSequencerRpcUrlListAtBlockHeight {
-    message: GetSequencerRpcUrlListAtBlockHeigthMessage,
-    signature: Signature,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSequencerRpcUrlListAtBlockHeighResponse {
-    pub rpc_url_list: Vec<(String, Option<String>)>,
+    pub sequencer_rpc_url_list: Vec<(String, Option<(String, String)>)>,
     pub block_height: u64,
 }
 
@@ -32,40 +26,40 @@ impl GetSequencerRpcUrlListAtBlockHeight {
 
         tracing::info!(
             "get sequencer rpc url list for rollup: {:?}, block number: {:?}",
-            parameter.message.cluster_id,
-            parameter.message.block_number
+            parameter.cluster_id,
+            parameter.block_number
         );
 
-        let sequencing_key = (
-            parameter.message.platform,
-            parameter.message.service_provider,
-        );
+        let sequencing_key = (parameter.platform, parameter.service_provider);
 
         let publisher = context.get_publisher(&sequencing_key).await?;
         // let block_number = publisher.get_block_number().await?;
 
-        let sequencer_list = publisher
-            .get_sequencer_list(
-                &parameter.message.cluster_id,
-                parameter.message.block_number,
-            )
+        let sequencer_address_list = publisher
+            .get_sequencer_list(&parameter.cluster_id, parameter.block_number)
             .await?;
 
-        let rpc_url_list: Vec<(String, Option<String>)> = sequencer_list
-            .into_iter()
-            .map(|address| {
-                let address = Address::from(address.as_slice().to_vec());
-                let rpc_url = SequencerNodeInfo::get(&address)
-                    .map(|node_info| node_info.into_rpc_url())
-                    .ok();
+        let sequencer_rpc_url_list: Vec<(String, Option<(String, String)>)> =
+            sequencer_address_list
+                .into_iter()
+                .map(|address| {
+                    let address = Address::from(address.as_slice().to_vec());
+                    let sequencer_rpc_url = SequencerNodeInfo::get(&address)
+                        .map(|node_info| {
+                            (
+                                node_info.external_rpc_url().to_owned(),
+                                node_info.cluster_rpc_url().to_owned(),
+                            )
+                        })
+                        .ok();
 
-                (address.as_hex_string(), rpc_url)
-            })
-            .collect();
+                    (address.as_hex_string(), sequencer_rpc_url)
+                })
+                .collect();
 
         Ok(GetSequencerRpcUrlListAtBlockHeighResponse {
-            rpc_url_list,
-            block_height: parameter.message.block_number,
+            sequencer_rpc_url_list,
+            block_height: parameter.block_number,
         })
     }
 }

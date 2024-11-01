@@ -4,7 +4,7 @@ mod prelude {
     pub use std::sync::Arc;
 
     pub use radius_sdk::{
-        json_rpc::{types::*, RpcError},
+        json_rpc::server::{RpcError, RpcParameter},
         liveness_radius::publisher::Publisher,
         signature::{Address, Signature},
     };

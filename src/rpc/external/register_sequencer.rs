@@ -1,18 +1,19 @@
 use crate::{rpc::prelude::*, util::health_check};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct RegisterSequencer {
+    message: RegisterSequencerMessage,
+    signature: Signature,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct RegisterSequencerMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
     address: Address,
-    rpc_url: String,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct RegisterSequencer {
-    message: RegisterSequencerMessage,
-    signature: Signature,
+    external_rpc_url: String,
+    cluster_rpc_url: String,
 }
 
 impl RegisterSequencer {
@@ -21,14 +22,14 @@ impl RegisterSequencer {
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Self>()?;
 
-        // // verify siganture
+        // Verify the message.
         // parameter.signature.verify_message(
-        //     parameter.message.platform.try_into()?,
+        //     parameter.message.platform.into(),
         //     &parameter.message,
         //     &parameter.message.address,
         // )?;
 
-        tracing::log::info!("Register sequencer: {:?}", parameter.message.address);
+        tracing::info!("Register sequencer: {:?}", parameter.message.address);
 
         match parameter.message.platform {
             Platform::Ethereum => {
@@ -49,14 +50,17 @@ impl RegisterSequencer {
                     .find(|&&address| parameter.message.address == address)
                     .ok_or(Error::NotRegisteredInContract)?;
             }
-            Platform::Local => {}
+            Platform::Local => return Err(Error::UnsupportedPlatform.into()),
         }
 
         // health check
-        health_check(&parameter.message.rpc_url).await?;
+        health_check(&parameter.message.external_rpc_url).await?;
 
-        let sequencer_node_info =
-            SequencerNodeInfo::new(parameter.message.address, parameter.message.rpc_url);
+        let sequencer_node_info = SequencerNodeInfo::new(
+            parameter.message.address,
+            parameter.message.external_rpc_url,
+            parameter.message.cluster_rpc_url,
+        );
 
         SequencerNodeInfo::put(&sequencer_node_info, sequencer_node_info.address())?;
 

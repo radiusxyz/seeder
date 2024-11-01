@@ -1,5 +1,11 @@
 use crate::rpc::prelude::*;
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct DeregisterSequencer {
+    message: DeregisterSequencerMessage,
+    signature: Signature,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterSequencerMessage {
     platform: Platform,
@@ -8,26 +14,20 @@ struct DeregisterSequencerMessage {
     address: Address,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct DeregisterSequencer {
-    message: DeregisterSequencerMessage,
-    signature: Signature,
-}
-
 impl DeregisterSequencer {
     pub const METHOD_NAME: &'static str = "deregister_sequencer";
 
     pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
         let parameter = parameter.parse::<Self>()?;
 
-        // // verify siganture
+        // Verify the message.
         // parameter.signature.verify_message(
-        //     parameter.message.platform.try_into()?,
+        //     parameter.message.platform.into(),
         //     &parameter.message,
         //     &parameter.message.address,
         // )?;
 
-        tracing::log::info!("Deregister sequencer: {:?}", parameter.message.address);
+        tracing::info!("Deregister sequencer: {:?}", parameter.message.address);
 
         match parameter.message.platform {
             Platform::Ethereum => {
@@ -52,7 +52,7 @@ impl DeregisterSequencer {
                     .find(|&&address| parameter.message.address == address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
-            Platform::Local => {}
+            Platform::Local => return Err(Error::UnsupportedPlatform.into()),
         }
 
         SequencerNodeInfo::delete(&parameter.message.address)?;
