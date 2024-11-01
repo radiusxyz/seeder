@@ -22,7 +22,7 @@ impl DeregisterSequencer {
 
         // Verify the message.
         parameter.signature.verify_message(
-            parameter.message.platform.try_into()?,
+            parameter.message.platform.into(),
             &parameter.message,
             &parameter.message.address,
         )?;
@@ -52,7 +52,7 @@ impl DeregisterSequencer {
                     .find(|&&address| parameter.message.address == address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
-            Platform::Local => {}
+            Platform::Local => return Err(Error::UnsupportedPlatform.into()),
         }
 
         SequencerNodeInfo::delete(&parameter.message.address)?;
