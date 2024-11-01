@@ -1,38 +1,20 @@
 #[derive(Debug)]
 pub enum Error {
     Boxed(Box<dyn std::error::Error>),
-    OpenConfig(std::io::Error),
-    ParseConfig(toml::de::Error),
+    Config(crate::types::ConfigError),
     Database(radius_sdk::kvstore::KvStoreError),
     JsonRPC(radius_sdk::json_rpc::server::RpcServerError),
     SignatureError(radius_sdk::signature::SignatureError),
-    SignatureMismatch,
-
-    Deserialize(serde_json::Error),
-
-    RemoveConfigDirectory,
-    CreateConfigDirectory,
-    CreateConfigFile,
-    CreatePrivateKeyFile,
-    LoadConfigOption(std::io::Error),
-    ParseTomlString(toml::de::Error),
-    ParseContractAddress,
 
     NotRegisteredInContract,
     NotDeregisteredFromContract,
-
-    FailedToGetSequencingInfo,
     FailedToGetPublisher,
-    FailedToGetSequencer,
 
-    NotSupportedPlatform,
-    NotSupportedValidationServiceProvider,
-    NotSupportedRollupType,
+    UnsupportedPlatform,
+    UnsupportedValidationServiceProvider,
+    UnsupportedRollupType,
 
     PublisherAlreadyExists,
-    SequencingInfoAlreadyExists,
-
-    UnsupportedChainType(crate::types::Platform),
 
     InvalidURL(reqwest::Error),
     PortConnection(reqwest::Error),
@@ -47,6 +29,12 @@ impl std::fmt::Display for Error {
 }
 
 impl std::error::Error for Error {}
+
+impl From<crate::types::ConfigError> for Error {
+    fn from(value: crate::types::ConfigError) -> Self {
+        Self::Config(value)
+    }
+}
 
 impl From<radius_sdk::kvstore::KvStoreError> for Error {
     fn from(value: radius_sdk::kvstore::KvStoreError) -> Self {
