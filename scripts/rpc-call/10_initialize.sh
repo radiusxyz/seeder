@@ -10,12 +10,12 @@ curl --location $SEEDER_INTERNAL_RPC_URL \
   "jsonrpc": "2.0",
   "method": "add_sequencing_info",
   "params": {
-    "platform": "'"$PLATFORM"'",
-    "service_provider": "'"$SERVICE_PROVIDER"'",
+    "platform": "'"$LIVENESS_PLATFORM"'",
+    "service_provider": "'"$LIVENESS_SERVICE_PROVIDER"'",
     "payload": {
       "liveness_rpc_url": "'"$LIVENESS_RPC_URL"'",
       "liveness_websocket_url": "'"$LIVENESS_WS_URL"'",
-      "contract_address": "'"$CONTRACT_ADDRESS"'"
+      "contract_address": "'"$LIVENESS_CONTRACT_ADDRESS"'"
     }
   },
   "id": 1
