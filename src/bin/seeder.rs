@@ -29,10 +29,10 @@ async fn main() -> Result<(), Error> {
             let app_state = initialize_app_state(DEFAULT_SIGNING_KEY).await?;
             tracing::info!("Successfully initialized app state.");
 
-            initialize_internal_rpc_server(&app_state, config.seeder_external_rpc_url()).await?;
+            initialize_internal_rpc_server(&app_state, config.seeder_internal_rpc_url()).await?;
 
             let server_handle =
-                initialize_external_rpc_server(&app_state, config.seeder_internal_rpc_url())
+                initialize_external_rpc_server(&app_state, config.seeder_external_rpc_url())
                     .await?;
 
             tracing::info!("Seeder server started");
