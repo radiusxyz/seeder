@@ -29,7 +29,10 @@ impl RegisterSequencer {
         //     &parameter.message.address,
         // )?;
 
-        tracing::info!("Register sequencer: {:?}", parameter.message.address);
+        tracing::info!(
+            "Register sequencer - address: {:?}",
+            parameter.message.address.as_hex_string()
+        );
 
         match parameter.message.platform {
             Platform::Ethereum => {

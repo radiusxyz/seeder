@@ -27,7 +27,10 @@ impl DeregisterSequencer {
         //     &parameter.message.address,
         // )?;
 
-        tracing::info!("Deregister sequencer: {:?}", parameter.message.address);
+        tracing::info!(
+            "Deregister sequencer: {:?}",
+            parameter.message.address.as_hex_string()
+        );
 
         match parameter.message.platform {
             Platform::Ethereum => {

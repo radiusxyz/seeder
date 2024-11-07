@@ -14,7 +14,7 @@ impl AddSequencingInfo {
         let parameter = parameter.parse::<Self>()?;
 
         tracing::info!(
-            "add sequencing info - platform: {:?}, service_provider: {:?}",
+            "Add sequencing info - platform: {:?} / service_provider: {:?}",
             parameter.platform,
             parameter.service_provider
         );

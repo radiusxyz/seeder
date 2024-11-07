@@ -25,7 +25,7 @@ impl GetSequencerRpcUrlListAtBlockHeight {
         let parameter = parameter.parse::<Self>()?;
 
         tracing::info!(
-            "get sequencer rpc url list for rollup: {:?}, block number: {:?}",
+            "Get sequencer rpc url list for rollup - rollup id: {:?} / block number: {:?}",
             parameter.cluster_id,
             parameter.block_number
         );
