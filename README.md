@@ -18,7 +18,7 @@ When Seeder receives the registration request, it first verifies the message sig
 A sequencer sends a signed message of its address of its address and the cluster ID it belongs to. Seeder verifies the message signature and checks if the address is deregistered from Liveness Contract. Seeder simply removes the address of the sequencer, making its RPC URLs unavailable afterwards.
 
 ## Contributing
-We appreciate your contributions to our project. To get involved, refer to the [Contributing Guide](https://github.com/radiusxyz/radius-docs-bbs/blob/main/docs/contributing_guide.md).
+We appreciate your contributions to our project. Visit [issues](https://github.com/radiusxyz/seeder/issues) page to start with or refer to the [Contributing guide](https://github.com/radiusxyz/radius-docs-bbs/blob/main/docs/contributing_guide.md).
 
 ## Getting Help
 Our developers are willing to answer your questions. If you are first and bewildered, refer to the [Getting Help](https://github.com/radiusxyz/radius-docs-bbs/blob/main/docs/getting_help.md) page.
