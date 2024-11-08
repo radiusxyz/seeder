@@ -12,7 +12,7 @@ bincode = "1.3.3"
 clap = { version = "4.4.7", features = ["derive"] }
 futures = "0.3.30"
 num-bigint = { version = "0.4", features = ["rand", "serde"] }
-radius-sdk = { git = "https://github.com/radiusxyz/radius-sdk-rs", rev = "d5dea4d83feade6651feeb19e190185e281caa66", features = ["full"] }
+radius-sdk = { git = "https://github.com/radiusxyz/radius-sdk-rs", rev = "df4b24469a221b2e084ca8255cef1223ebba538e", features = ["full"] }
 reqwest = { version = "0.12.4", features = ["json"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.80"
