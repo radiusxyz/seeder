@@ -26,14 +26,12 @@ async fn main() -> Result<(), Error> {
             // Initialize a local database.
             KvStore::new(config.path().join(DATABASE_DIR_NAME))?.init();
 
-            let app_state = initialize_app_state(DEFAULT_SIGNING_KEY).await?;
+            let app_state = initialize_app_state(config, DEFAULT_SIGNING_KEY).await?;
             tracing::info!("Successfully initialized app state.");
 
-            initialize_internal_rpc_server(&app_state, config.seeder_internal_rpc_url()).await?;
+            initialize_internal_rpc_server(&app_state).await?;
 
-            let server_handle =
-                initialize_external_rpc_server(&app_state, config.seeder_external_rpc_url())
-                    .await?;
+            let server_handle = initialize_external_rpc_server(&app_state).await?;
 
             tracing::info!("Seeder server started");
 
@@ -44,9 +42,9 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-async fn initialize_app_state(signing_key: &str) -> Result<AppState, Error> {
+async fn initialize_app_state(config: Config, signing_key: &str) -> Result<AppState, Error> {
     // init app state
-    let app_state = AppState::new(HashMap::new());
+    let app_state = AppState::new(config, HashMap::new());
 
     let sequencing_info_list = SequencingInfoList::get_mut_or(SequencingInfoList::default)?;
 
@@ -79,22 +77,21 @@ async fn initialize_app_state(signing_key: &str) -> Result<AppState, Error> {
     Ok(app_state)
 }
 
-async fn initialize_internal_rpc_server(
-    context: &AppState,
-    seeder_internal_rpc_url: &String,
-) -> Result<(), Error> {
+async fn initialize_internal_rpc_server(context: &AppState) -> Result<(), Error> {
+    let internal_rpc_url = context.config().internal_rpc_url().to_string();
+
     // Initialize the seeder internal RPC server.
     let internal_rpc_server = RpcServer::new(context.clone())
         .register_rpc_method(AddRollup::METHOD_NAME, AddRollup::handler)?
         .register_rpc_method(AddSequencingInfo::METHOD_NAME, AddSequencingInfo::handler)?
         .register_rpc_method(GetSequencingInfo::METHOD_NAME, GetSequencingInfo::handler)?
         .register_rpc_method(GetSequencingInfos::METHOD_NAME, GetSequencingInfos::handler)?
-        .init(seeder_internal_rpc_url)
+        .init(internal_rpc_url.clone())
         .await?;
 
     tracing::info!(
         "Successfully started the seeder internal RPC server: {}",
-        seeder_internal_rpc_url
+        internal_rpc_url
     );
 
     tokio::spawn(async move {
@@ -104,10 +101,9 @@ async fn initialize_internal_rpc_server(
     Ok(())
 }
 
-async fn initialize_external_rpc_server(
-    context: &AppState,
-    seeder_external_rpc_url: &String,
-) -> Result<JoinHandle<()>, Error> {
+async fn initialize_external_rpc_server(context: &AppState) -> Result<JoinHandle<()>, Error> {
+    let external_rpc_url = anywhere(&context.config().external_port()?);
+
     // Initialize the seeder internal RPC server.
     let internal_rpc_server = RpcServer::new(context.clone())
         .register_rpc_method(
@@ -128,12 +124,12 @@ async fn initialize_external_rpc_server(
             GetSequencerRpcUrlListAtBlockHeight::handler,
         )?
         .register_rpc_method(RegisterSequencer::METHOD_NAME, RegisterSequencer::handler)?
-        .init(seeder_external_rpc_url)
+        .init(external_rpc_url.clone())
         .await?;
 
     tracing::info!(
         "Successfully started the seeder external RPC server: {}",
-        seeder_external_rpc_url
+        external_rpc_url
     );
 
     let server_handle = tokio::spawn(async move {
@@ -141,4 +137,8 @@ async fn initialize_external_rpc_server(
     });
 
     Ok(server_handle)
+}
+
+pub fn anywhere(port: &str) -> String {
+    format!("0.0.0.0:{}", port)
 }

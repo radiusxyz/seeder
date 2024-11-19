@@ -7,8 +7,8 @@ use crate::types::cli::{ConfigOption, ConfigPath, CONFIG_FILE_NAME};
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Config {
     path: PathBuf,
-    seeder_external_rpc_url: String,
-    seeder_internal_rpc_url: String,
+    external_rpc_url: String,
+    internal_rpc_url: String,
 }
 
 impl Config {
@@ -35,10 +35,10 @@ impl Config {
 
         Ok(Config {
             path: config_path,
-            seeder_external_rpc_url: merged_config_option
+            external_rpc_url: merged_config_option
                 .seeder_external_rpc_url
                 .ok_or(ConfigError::EmptyExternalRpcUrl)?,
-            seeder_internal_rpc_url: merged_config_option
+            internal_rpc_url: merged_config_option
                 .seeder_internal_rpc_url
                 .ok_or(ConfigError::EmptyInternalRpcUrl)?,
         })
@@ -48,12 +48,21 @@ impl Config {
         &self.path
     }
 
-    pub fn seeder_external_rpc_url(&self) -> &String {
-        &self.seeder_external_rpc_url
+    pub fn external_rpc_url(&self) -> &String {
+        &self.external_rpc_url
     }
 
-    pub fn seeder_internal_rpc_url(&self) -> &String {
-        &self.seeder_internal_rpc_url
+    pub fn internal_rpc_url(&self) -> &String {
+        &self.internal_rpc_url
+    }
+
+    pub fn external_port(&self) -> Result<String, ConfigError> {
+        Ok(self
+            .external_rpc_url()
+            .split(':')
+            .last()
+            .ok_or(ConfigError::InvalidExternalPort)?
+            .to_string())
     }
 }
 
@@ -66,6 +75,8 @@ pub enum ConfigError {
     RemoveConfigDirectory(std::io::Error),
     CreateConfigDirectory(std::io::Error),
     CreateConfigFile(std::io::Error),
+
+    InvalidExternalPort,
 }
 
 impl std::fmt::Display for ConfigError {

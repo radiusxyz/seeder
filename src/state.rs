@@ -5,7 +5,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     error::Error,
-    types::{Platform, ServiceProvider},
+    types::{Config, Platform, ServiceProvider},
 };
 
 pub struct AppState {
@@ -13,6 +13,7 @@ pub struct AppState {
 }
 
 struct AppStateInner {
+    config: Config,
     publishers: Mutex<HashMap<(Platform, ServiceProvider), Arc<Publisher>>>,
 }
 
@@ -29,14 +30,22 @@ impl Clone for AppState {
 }
 
 impl AppState {
-    pub fn new(publisher: HashMap<(Platform, ServiceProvider), Arc<Publisher>>) -> Self {
+    pub fn new(
+        config: Config,
+        publisher: HashMap<(Platform, ServiceProvider), Arc<Publisher>>,
+    ) -> Self {
         let inner = AppStateInner {
+            config,
             publishers: Mutex::new(publisher),
         };
 
         Self {
             inner: Arc::new(inner),
         }
+    }
+
+    pub fn config(&self) -> &Config {
+        &self.inner.config
     }
 
     pub async fn get_publisher(
