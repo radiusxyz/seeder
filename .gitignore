@@ -2,3 +2,6 @@
 
 /data
 /scripts/seeder
+
+/scripts/execute/env.sh
+/scripts/rpc-call/env.sh
