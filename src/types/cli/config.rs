@@ -2,13 +2,15 @@ use std::{fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use super::DATABASE_DIR_NAME;
 use crate::types::cli::{ConfigOption, ConfigPath, CONFIG_FILE_NAME};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Config {
-    path: PathBuf,
-    external_rpc_url: String,
-    internal_rpc_url: String,
+    pub path: PathBuf,
+    pub signing_key: String,
+    pub external_rpc_url: String,
+    pub internal_rpc_url: String,
 }
 
 impl Config {
@@ -33,7 +35,7 @@ impl Config {
         // Merge configs from CLI input
         let merged_config_option = config_file.merge(config_option);
 
-        Ok(Config {
+        Ok(Self {
             path: config_path,
             external_rpc_url: merged_config_option
                 .seeder_external_rpc_url
@@ -41,24 +43,19 @@ impl Config {
             internal_rpc_url: merged_config_option
                 .seeder_internal_rpc_url
                 .ok_or(ConfigError::EmptyInternalRpcUrl)?,
+            signing_key: merged_config_option
+                .signing_key
+                .ok_or(ConfigError::EmptySigningKey)?,
         })
     }
 
-    pub fn path(&self) -> &PathBuf {
-        &self.path
-    }
-
-    pub fn external_rpc_url(&self) -> &String {
-        &self.external_rpc_url
-    }
-
-    pub fn internal_rpc_url(&self) -> &String {
-        &self.internal_rpc_url
+    pub fn database_path(&self) -> PathBuf {
+        self.path.join(DATABASE_DIR_NAME)
     }
 
     pub fn external_port(&self) -> Result<String, ConfigError> {
         Ok(self
-            .external_rpc_url()
+            .external_rpc_url
             .split(':')
             .last()
             .ok_or(ConfigError::InvalidExternalPort)?
@@ -72,6 +69,7 @@ pub enum ConfigError {
     Parse(toml::de::Error),
     EmptyExternalRpcUrl,
     EmptyInternalRpcUrl,
+    EmptySigningKey,
     RemoveConfigDirectory(std::io::Error),
     CreateConfigDirectory(std::io::Error),
     CreateConfigFile(std::io::Error),

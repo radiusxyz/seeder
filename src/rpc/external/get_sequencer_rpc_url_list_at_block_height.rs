@@ -10,34 +10,35 @@ pub struct GetSequencerRpcUrlListAtBlockHeight {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetSequencerRpcUrlListAtBlockHeighResponse {
+pub struct GetSequencerRpcUrlListAtBlockHeightResponse {
     pub sequencer_rpc_url_list: Vec<(String, Option<(String, String)>)>,
     pub block_height: u64,
 }
 
-impl GetSequencerRpcUrlListAtBlockHeight {
-    pub const METHOD_NAME: &'static str = "get_sequencer_rpc_url_list_at_block_height";
+impl RpcParameter<AppState> for GetSequencerRpcUrlListAtBlockHeight {
+    type Response = GetSequencerRpcUrlListAtBlockHeightResponse;
 
-    pub async fn handler(
-        parameter: RpcParameter,
-        context: Arc<AppState>,
-    ) -> Result<GetSequencerRpcUrlListAtBlockHeighResponse, RpcError> {
-        let parameter = parameter.parse::<Self>()?;
+    fn method() -> &'static str {
+        "get_sequencer_rpc_url_list_at_block_height"
+    }
 
+    async fn handler(self, context: AppState) -> Result<Self::Response, RpcError> {
         tracing::info!(
             "Get sequencer rpc url list for rollup - rollup id: {:?} / block number: {:?}",
-            parameter.cluster_id,
-            parameter.block_number
+            self.cluster_id,
+            self.block_number
         );
 
-        let sequencing_key = (parameter.platform, parameter.service_provider);
-
-        let publisher = context.get_publisher(&sequencing_key).await?;
+        let liveness_client: liveness::radius::LivenessClient = context
+            .get_liveness_client(self.platform, self.service_provider)
+            .await?;
         // let block_number = publisher.get_block_number().await?;
 
-        let sequencer_address_list = publisher
-            .get_sequencer_list(&parameter.cluster_id, parameter.block_number)
-            .await?;
+        let sequencer_address_list = liveness_client
+            .publisher()
+            .get_sequencer_list(&self.cluster_id, self.block_number)
+            .await
+            .map_err(|error| Error::LivenessClient(error.into()))?;
 
         let sequencer_rpc_url_list: Vec<(String, Option<(String, String)>)> =
             sequencer_address_list
@@ -57,9 +58,9 @@ impl GetSequencerRpcUrlListAtBlockHeight {
                 })
                 .collect();
 
-        Ok(GetSequencerRpcUrlListAtBlockHeighResponse {
+        Ok(GetSequencerRpcUrlListAtBlockHeightResponse {
             sequencer_rpc_url_list,
-            block_height: parameter.block_number,
+            block_height: self.block_number,
         })
     }
 }

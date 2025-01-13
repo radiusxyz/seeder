@@ -10,16 +10,15 @@ pub struct GetExecutorRpcUrlListResponse {
     pub executor_rpc_url_list: Vec<(String, Option<String>)>,
 }
 
-impl GetExecutorRpcUrlList {
-    pub const METHOD_NAME: &'static str = "get_executor_rpc_url_list";
+impl RpcParameter<AppState> for GetExecutorRpcUrlList {
+    type Response = GetExecutorRpcUrlListResponse;
 
-    pub async fn handler(
-        parameter: RpcParameter,
-        _context: Arc<AppState>,
-    ) -> Result<GetExecutorRpcUrlListResponse, RpcError> {
-        let parameter = parameter.parse::<Self>()?;
+    fn method() -> &'static str {
+        "get_executor_rpc_url_list"
+    }
 
-        let executor_rpc_url_list: Vec<(String, Option<String>)> = parameter
+    async fn handler(self, _context: AppState) -> Result<Self::Response, RpcError> {
+        let executor_rpc_url_list: Vec<(String, Option<String>)> = self
             .executor_address_list
             .into_iter()
             .map(|address| {

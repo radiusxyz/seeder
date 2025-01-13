@@ -16,7 +16,7 @@ pub async fn health_check(sequencer_rpc_url: impl AsRef<str>) -> Result<(), Erro
         .get(health_check_url)
         .send()
         .await
-        .map_err(Error::PortConnection)?;
+        .map_err(Error::HealthCheck)?;
 
     Ok(())
 }

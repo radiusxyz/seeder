@@ -14,51 +14,59 @@ struct DeregisterSequencerMessage {
     address: Address,
 }
 
-impl DeregisterSequencer {
-    pub const METHOD_NAME: &'static str = "deregister_sequencer";
+impl RpcParameter<AppState> for DeregisterSequencer {
+    type Response = ();
 
-    pub async fn handler(parameter: RpcParameter, context: Arc<AppState>) -> Result<(), RpcError> {
-        let parameter = parameter.parse::<Self>()?;
+    fn method() -> &'static str {
+        "deregister_sequencer"
+    }
 
+    async fn handler(self, context: AppState) -> Result<Self::Response, RpcError> {
         // Verify the message.
-        // parameter.signature.verify_message(
-        //     parameter.message.platform.into(),
-        //     &parameter.message,
-        //     &parameter.message.address,
+        // self.signature.verify_message(
+        //     self.message.platform.into(),
+        //     &self.message,
+        //     &self.message.address,
         // )?;
 
         tracing::info!(
             "Deregister sequencer: {:?}",
-            parameter.message.address.as_hex_string()
+            self.message.address.as_hex_string()
         );
 
-        match parameter.message.platform {
+        match self.message.platform {
             Platform::Ethereum => {
-                let sequencing_key = (
-                    parameter.message.platform,
-                    parameter.message.service_provider,
-                );
-
-                let publisher = context.get_publisher(&sequencing_key).await?;
-                let block_margin = publisher.get_block_margin().await?.try_into()?;
-                let block_number = publisher
-                    .get_block_number()
-                    .await?
-                    .wrapping_sub(block_margin);
-                let sequencer_list = publisher
-                    .get_sequencer_list(&parameter.message.cluster_id, block_number)
+                let liveness_client: liveness::radius::LivenessClient = context
+                    .get_liveness_client(self.message.platform, self.message.service_provider)
                     .await?;
+                let block_margin = liveness_client
+                    .publisher()
+                    .get_block_margin()
+                    .await
+                    .map_err(|error| Error::LivenessClient(error.into()))?
+                    .try_into()?;
+                let block_number = liveness_client
+                    .publisher()
+                    .get_block_number()
+                    .await
+                    .map_err(|error| Error::LivenessClient(error.into()))?
+                    .wrapping_sub(block_margin);
+                let sequencer_list = liveness_client
+                    .publisher()
+                    .get_sequencer_list(&self.message.cluster_id, block_number)
+                    .await
+                    .map_err(|error| Error::LivenessClient(error.into()))?;
 
                 // check if the sequencer is deregistered from the contract
                 sequencer_list
                     .iter()
-                    .find(|&&address| parameter.message.address == address)
+                    .find(|&&address| self.message.address == address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
             }
             Platform::Local => return Err(Error::UnsupportedPlatform.into()),
         }
 
-        SequencerNodeInfo::delete(&parameter.message.address)?;
+        SequencerNodeInfo::delete(&self.message.address)?;
 
         Ok(())
     }

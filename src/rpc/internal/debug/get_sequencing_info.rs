@@ -11,17 +11,16 @@ pub struct GetSequencingInfoResponse {
     sequencing_info_payload: SequencingInfoPayload,
 }
 
-impl GetSequencingInfo {
-    pub const METHOD_NAME: &'static str = "get_sequencing_info";
+impl RpcParameter<AppState> for GetSequencingInfo {
+    type Response = GetSequencingInfoResponse;
 
-    pub async fn handler(
-        parameter: RpcParameter,
-        _context: Arc<AppState>,
-    ) -> Result<GetSequencingInfoResponse, RpcError> {
-        let parameter = parameter.parse::<GetSequencingInfo>()?;
+    fn method() -> &'static str {
+        "get_sequencing_info"
+    }
 
+    async fn handler(self, _context: AppState) -> Result<Self::Response, RpcError> {
         let sequencing_info_payload =
-            SequencingInfoPayload::get(parameter.platform, parameter.service_provider)?;
+            SequencingInfoPayload::get(self.platform, self.service_provider)?;
 
         Ok(GetSequencingInfoResponse {
             sequencing_info_payload,
