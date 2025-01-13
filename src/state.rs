@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use radius_sdk::liveness_radius::publisher::Publisher;
+use radius_sdk::liveness::radius::publisher::Publisher;
 use tokio::sync::Mutex;
 
 use crate::{

@@ -5,7 +5,7 @@ mod prelude {
 
     pub use radius_sdk::{
         json_rpc::server::{RpcError, RpcParameter},
-        liveness_radius::publisher::Publisher,
+        liveness::radius::publisher::Publisher,
         signature::{Address, Signature},
     };
     pub use serde::{Deserialize, Serialize};

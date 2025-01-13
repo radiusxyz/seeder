@@ -19,7 +19,7 @@ pub enum Error {
     InvalidURL(reqwest::Error),
     PortConnection(reqwest::Error),
 
-    InitializePublisher(radius_sdk::liveness_radius::publisher::PublisherError),
+    InitializePublisher(radius_sdk::liveness::radius::publisher::PublisherError),
 }
 
 impl std::fmt::Display for Error {
