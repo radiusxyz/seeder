@@ -1,10 +1,14 @@
-use std::{collections::HashMap, sync::Arc};
-
-use debug::AddRollup;
 use radius_sdk::{
-    json_rpc::server::RpcServer, kvstore::KvStore, liveness_radius::publisher::Publisher,
+    json_rpc::server::RpcServer,
+    kvstore::{CachedKvStore, KvStore},
 };
-use seeder::{error::Error, rpc::*, state::AppState, types::*};
+use seeder::{
+    client::liveness,
+    error::Error,
+    rpc::{external, internal},
+    state::AppState,
+    types::*,
+};
 use tokio::task::JoinHandle;
 
 #[tokio::main]
@@ -23,18 +27,23 @@ async fn main() -> Result<(), Error> {
         } => {
             let config = Config::load(config_option)?;
 
-            // Initialize a local database.
-            KvStore::new(config.path().join(DATABASE_DIR_NAME))?.init();
+            // Initialize the database.
+            KvStore::open(config.database_path())?.init();
 
-            let app_state = initialize_app_state(config, DEFAULT_SIGNING_KEY).await?;
+            let app_state: AppState = AppState::new(
+                config.clone(),
+                CachedKvStore::default(),
+                CachedKvStore::default(),
+            );
+
+            initialize_clients(&app_state).await?;
             tracing::info!("Successfully initialized app state.");
 
+            // Initialize the internal rpc server.
             initialize_internal_rpc_server(&app_state).await?;
 
+            tracing::info!("Starting the seeder server..");
             let server_handle = initialize_external_rpc_server(&app_state).await?;
-
-            tracing::info!("Seeder server started");
-
             server_handle.await.unwrap();
         }
     }
@@ -42,50 +51,38 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-async fn initialize_app_state(config: Config, signing_key: &str) -> Result<AppState, Error> {
-    // init app state
-    let app_state = AppState::new(config, HashMap::new());
-
+async fn initialize_clients(app_state: &AppState) -> Result<(), Error> {
     let sequencing_info_list = SequencingInfoList::get_mut_or(SequencingInfoList::default)?;
 
     for (platform, service_provider) in sequencing_info_list.iter() {
-        let sequencing_info_key = (*platform, *service_provider);
         let sequencing_info_payload = SequencingInfoPayload::get(*platform, *service_provider)?;
         match sequencing_info_payload {
-            SequencingInfoPayload::Ethereum(payload) => {
-                // init publisher
-                if app_state.get_publisher(&sequencing_info_key).await.is_ok() {
-                    continue;
-                }
-
-                // TODO: remove hard-coded value
-                let publisher = Publisher::new(
-                    payload.liveness_rpc_url.clone(),
-                    signing_key,
-                    payload.contract_address.clone(),
-                )
-                .map_err(Error::InitializePublisher)?;
-
-                app_state
-                    .add_publisher(sequencing_info_key, Arc::new(publisher))
-                    .await;
+            SequencingInfoPayload::Ethereum(liveness_info) => {
+                liveness::radius::LivenessClient::initialize(
+                    app_state.clone(),
+                    *platform,
+                    *service_provider,
+                    liveness_info,
+                );
             }
-            _ => {}
+            SequencingInfoPayload::Local(_payload) => {
+                todo!("Implement 'LivenessClient' for local sequencing.");
+            }
         }
     }
 
-    Ok(app_state)
+    Ok(())
 }
 
 async fn initialize_internal_rpc_server(context: &AppState) -> Result<(), Error> {
-    let internal_rpc_url = context.config().internal_rpc_url().to_string();
+    let internal_rpc_url = context.config().internal_rpc_url.to_string();
 
     // Initialize the seeder internal RPC server.
     let internal_rpc_server = RpcServer::new(context.clone())
-        .register_rpc_method(AddRollup::METHOD_NAME, AddRollup::handler)?
-        .register_rpc_method(AddSequencingInfo::METHOD_NAME, AddSequencingInfo::handler)?
-        .register_rpc_method(GetSequencingInfo::METHOD_NAME, GetSequencingInfo::handler)?
-        .register_rpc_method(GetSequencingInfos::METHOD_NAME, GetSequencingInfos::handler)?
+        .register_rpc_method::<internal::debug::AddRollup>()?
+        .register_rpc_method::<internal::AddSequencingInfo>()?
+        .register_rpc_method::<internal::GetSequencingInfo>()?
+        .register_rpc_method::<internal::GetSequencingInfos>()?
         .init(internal_rpc_url.clone())
         .await?;
 
@@ -106,24 +103,12 @@ async fn initialize_external_rpc_server(context: &AppState) -> Result<JoinHandle
 
     // Initialize the seeder internal RPC server.
     let internal_rpc_server = RpcServer::new(context.clone())
-        .register_rpc_method(
-            DeregisterSequencer::METHOD_NAME,
-            DeregisterSequencer::handler,
-        )?
-        .register_rpc_method(
-            GetExecutorRpcUrlList::METHOD_NAME,
-            GetExecutorRpcUrlList::handler,
-        )?
-        .register_rpc_method(GetSequencerRpcUrl::METHOD_NAME, GetSequencerRpcUrl::handler)?
-        .register_rpc_method(
-            GetSequencerRpcUrlList::METHOD_NAME,
-            GetSequencerRpcUrlList::handler,
-        )?
-        .register_rpc_method(
-            GetSequencerRpcUrlListAtBlockHeight::METHOD_NAME,
-            GetSequencerRpcUrlListAtBlockHeight::handler,
-        )?
-        .register_rpc_method(RegisterSequencer::METHOD_NAME, RegisterSequencer::handler)?
+        .register_rpc_method::<external::DeregisterSequencer>()?
+        .register_rpc_method::<external::GetExecutorRpcUrlList>()?
+        .register_rpc_method::<external::GetSequencerRpcUrl>()?
+        .register_rpc_method::<external::GetSequencerRpcUrlList>()?
+        .register_rpc_method::<external::GetSequencerRpcUrlListAtBlockHeight>()?
+        .register_rpc_method::<external::RegisterSequencer>()?
         .init(external_rpc_url.clone())
         .await?;
 

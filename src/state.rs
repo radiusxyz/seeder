@@ -1,12 +1,11 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{any::Any, sync::Arc};
 
-use radius_sdk::liveness_radius::publisher::Publisher;
-use tokio::sync::Mutex;
-
-use crate::{
-    error::Error,
-    types::{Config, Platform, ServiceProvider},
+use radius_sdk::{
+    kvstore::{CachedKvStore, CachedKvStoreError},
+    signature::PrivateKeySigner,
 };
+
+use crate::types::{Config, Platform, ServiceProvider};
 
 pub struct AppState {
     inner: Arc<AppStateInner>,
@@ -14,7 +13,8 @@ pub struct AppState {
 
 struct AppStateInner {
     config: Config,
-    publishers: Mutex<HashMap<(Platform, ServiceProvider), Arc<Publisher>>>,
+    liveness_clients: CachedKvStore,
+    signers: CachedKvStore,
 }
 
 unsafe impl Send for AppState {}
@@ -30,13 +30,11 @@ impl Clone for AppState {
 }
 
 impl AppState {
-    pub fn new(
-        config: Config,
-        publisher: HashMap<(Platform, ServiceProvider), Arc<Publisher>>,
-    ) -> Self {
+    pub fn new(config: Config, liveness_clients: CachedKvStore, signers: CachedKvStore) -> Self {
         let inner = AppStateInner {
             config,
-            publishers: Mutex::new(publisher),
+            liveness_clients,
+            signers,
         };
 
         Self {
@@ -47,29 +45,56 @@ impl AppState {
     pub fn config(&self) -> &Config {
         &self.inner.config
     }
+}
 
-    pub async fn get_publisher(
+/// Liveness client functions
+impl AppState {
+    pub async fn add_liveness_client<T>(
         &self,
-        sequencing_info_key: &(Platform, ServiceProvider),
-    ) -> Result<Arc<Publisher>, Error> {
-        self.inner
-            .publishers
-            .lock()
-            .await
-            .get(sequencing_info_key)
-            .cloned()
-            .ok_or(Error::FailedToGetPublisher)
+        platform: Platform,
+        service_provider: ServiceProvider,
+        liveness_client: T,
+    ) -> Result<(), CachedKvStoreError>
+    where
+        T: Clone + Any + Send + 'static,
+    {
+        let key = &(platform, service_provider);
+
+        self.inner.liveness_clients.put(key, liveness_client).await
     }
 
-    pub async fn add_publisher(
+    pub async fn get_liveness_client<T>(
         &self,
-        sequencing_info_key: (Platform, ServiceProvider),
-        publisher: Arc<Publisher>,
-    ) {
-        self.inner
-            .publishers
-            .lock()
-            .await
-            .insert(sequencing_info_key, publisher);
+        platform: Platform,
+        service_provider: ServiceProvider,
+    ) -> Result<T, CachedKvStoreError>
+    where
+        T: Clone + Any + Send + 'static,
+    {
+        let key = &(platform, service_provider);
+
+        self.inner.liveness_clients.get(key).await
+    }
+}
+
+/// Signer functions
+impl AppState {
+    pub async fn add_signer(
+        &self,
+        platform: Platform,
+        signer: PrivateKeySigner,
+    ) -> Result<(), CachedKvStoreError> {
+        let key = &(platform);
+
+        self.inner.signers.put(key, signer).await
+    }
+
+    pub async fn get_signer(
+        &self,
+        platform: Platform,
+    ) -> Result<PrivateKeySigner, CachedKvStoreError> {
+        let key = &(platform);
+
+        self.inner.signers.get(key).await
     }
 }

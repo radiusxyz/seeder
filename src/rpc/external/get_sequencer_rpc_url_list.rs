@@ -17,16 +17,15 @@ pub struct GetSequencerRpcUrlListResponse {
     pub sequencer_rpc_url_list: Vec<SequencerRpcInfo>,
 }
 
-impl GetSequencerRpcUrlList {
-    pub const METHOD_NAME: &'static str = "get_sequencer_rpc_url_list";
+impl RpcParameter<AppState> for GetSequencerRpcUrlList {
+    type Response = GetSequencerRpcUrlListResponse;
 
-    pub async fn handler(
-        parameter: RpcParameter,
-        _context: Arc<AppState>,
-    ) -> Result<GetSequencerRpcUrlListResponse, RpcError> {
-        let parameter = parameter.parse::<Self>()?;
+    fn method() -> &'static str {
+        "get_sequencer_rpc_url_list"
+    }
 
-        let sequencer_rpc_url_list: Vec<SequencerRpcInfo> = parameter
+    async fn handler(self, _context: AppState) -> Result<Self::Response, RpcError> {
+        let sequencer_rpc_url_list: Vec<SequencerRpcInfo> = self
             .sequencer_address_list
             .into_iter()
             .map(|address| match SequencerNodeInfo::get(&address) {

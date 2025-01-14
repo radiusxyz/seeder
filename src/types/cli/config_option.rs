@@ -21,6 +21,10 @@ pub struct ConfigOption {
     #[doc = "Set the seeder internal rpc url"]
     #[clap(long = "seeder-internal-rpc-url")]
     pub seeder_internal_rpc_url: Option<String>,
+
+    #[doc = "Set the seeder singing key"]
+    #[clap(long = "seeder-signing-key")]
+    pub signing_key: Option<String>,
 }
 
 impl Default for ConfigOption {
@@ -29,6 +33,7 @@ impl Default for ConfigOption {
             path: Some(ConfigPath::default().as_ref().into()),
             seeder_external_rpc_url: Some(DEFAULT_SEEDER_EXTERNAL_RPC_URL.into()),
             seeder_internal_rpc_url: Some(DEFAULT_SEEDER_INTERNAL_RPC_URL.into()),
+            signing_key: Some("".to_owned()),
         }
     }
 }
