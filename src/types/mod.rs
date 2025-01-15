@@ -1,4 +1,4 @@
-mod cli;
+mod config;
 mod rollup;
 mod sequencer;
 mod sequencing;
@@ -10,7 +10,7 @@ mod prelude {
     pub use serde::{Deserialize, Serialize};
 }
 
-pub use cli::*;
+pub use config::*;
 pub use rollup::*;
 pub use sequencer::*;
 pub use sequencing::*;

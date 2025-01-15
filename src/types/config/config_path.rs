@@ -6,15 +6,15 @@ use std::{
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 
-use crate::types::cli::{
-    config::ConfigError, config_option::ConfigOption, CONFIG_FILE_NAME, DEFAULT_HOME_PATH,
+use crate::types::{
+    config::ConfigError, ConfigOption, CONFIG_FILE_NAME, DEFAULT_SIGNING_KEY, SIGNING_KEY_PATH,
 };
 
 #[derive(Debug, Deserialize, Parser, Serialize)]
 pub struct ConfigPath {
-    #[doc = "Set the sequencer configuration path"]
+    #[doc = "Set the seeder configuration path"]
     #[clap(long = "path", default_value_t = Self::default().to_string())]
-    path: String,
+    pub path: String,
 }
 
 impl std::fmt::Display for ConfigPath {
@@ -32,7 +32,7 @@ impl AsRef<Path> for ConfigPath {
 impl Default for ConfigPath {
     fn default() -> Self {
         let path = PathBuf::from(env::var("HOME").unwrap())
-            .join(DEFAULT_HOME_PATH)
+            .join(super::DEFAULT_HOME_PATH)
             .to_str()
             .unwrap()
             .to_string();
@@ -56,6 +56,12 @@ impl ConfigPath {
         let config_toml_string = ConfigOption::default().get_toml_string();
         fs::write(config_file_path, config_toml_string).map_err(ConfigError::CreateConfigFile)?;
 
+        // Generate a sign key.
+        let signing_key_path = self.as_ref().join(SIGNING_KEY_PATH);
+        fs::write(signing_key_path, DEFAULT_SIGNING_KEY)
+            .map_err(ConfigError::CreatePrivateKeyFile)?;
+
+        tracing::info!("Created a sign key {:?}", DEFAULT_SIGNING_KEY);
         tracing::info!("Created a new config directory at {:?}", self.as_ref());
         Ok(())
     }
