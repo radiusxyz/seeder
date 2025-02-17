@@ -1,24 +1,24 @@
 use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct DeregisterSequencer {
-    message: DeregisterSequencerMessage,
+pub struct DeregisterTxOrderer {
+    message: DeregisterTxOrdererMessage,
     signature: Signature,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct DeregisterSequencerMessage {
+struct DeregisterTxOrdererMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
     address: Address,
 }
 
-impl RpcParameter<AppState> for DeregisterSequencer {
+impl RpcParameter<AppState> for DeregisterTxOrderer {
     type Response = ();
 
     fn method() -> &'static str {
-        "deregister_sequencer"
+        "deregister_tx_orderer"
     }
 
     async fn handler(self, context: AppState) -> Result<Self::Response, RpcError> {
@@ -30,7 +30,7 @@ impl RpcParameter<AppState> for DeregisterSequencer {
         // )?;
 
         tracing::info!(
-            "Deregister sequencer: {:?}",
+            "Deregister tx_orderer: {:?}",
             self.message.address.as_hex_string()
         );
 
@@ -51,14 +51,14 @@ impl RpcParameter<AppState> for DeregisterSequencer {
                     .await
                     .map_err(|error| Error::LivenessClient(error.into()))?
                     .wrapping_sub(block_margin);
-                let sequencer_list = liveness_client
+                let tx_orderer_list = liveness_client
                     .publisher()
-                    .get_sequencer_list(&self.message.cluster_id, block_number)
+                    .get_tx_orderer_list(&self.message.cluster_id, block_number)
                     .await
                     .map_err(|error| Error::LivenessClient(error.into()))?;
 
-                // check if the sequencer is deregistered from the contract
-                sequencer_list
+                // check if the tx_orderer is deregistered from the contract
+                tx_orderer_list
                     .iter()
                     .find(|&&address| self.message.address == address)
                     .map_or(Ok(()), |_| Err(Error::NotDeregisteredFromContract))?;
@@ -66,7 +66,7 @@ impl RpcParameter<AppState> for DeregisterSequencer {
             Platform::Local => return Err(Error::UnsupportedPlatform.into()),
         }
 
-        SequencerNodeInfo::delete(&self.message.address)?;
+        TxOrdererNodeInfo::delete(&self.message.address)?;
 
         Ok(())
     }

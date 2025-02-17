@@ -1,24 +1,24 @@
 use crate::rpc::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetSequencerRpcUrl {
+pub struct GetTxOrdererRpcUrl {
     address: Address,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetSequencerRpcUrlResponse {
-    pub sequencer_rpc_url: (String, Option<(String, String)>),
+pub struct GetTxOrdererRpcUrlResponse {
+    pub tx_orderer_rpc_url: (String, Option<(String, String)>),
 }
 
-impl RpcParameter<AppState> for GetSequencerRpcUrl {
-    type Response = GetSequencerRpcUrlResponse;
+impl RpcParameter<AppState> for GetTxOrdererRpcUrl {
+    type Response = GetTxOrdererRpcUrlResponse;
 
     fn method() -> &'static str {
-        "get_sequencer_rpc_url"
+        "get_tx_orderer_rpc_url"
     }
 
     async fn handler(self, _context: AppState) -> Result<Self::Response, RpcError> {
-        let sequencer_rpc_url = SequencerNodeInfo::get(&self.address)
+        let tx_orderer_rpc_url = TxOrdererNodeInfo::get(&self.address)
             .map(|node_info| {
                 (
                     node_info.external_rpc_url().to_owned(),
@@ -26,8 +26,8 @@ impl RpcParameter<AppState> for GetSequencerRpcUrl {
                 )
             })
             .ok();
-        let sequencer_rpc_url = (self.address.as_hex_string(), sequencer_rpc_url);
+        let tx_orderer_rpc_url = (self.address.as_hex_string(), tx_orderer_rpc_url);
 
-        Ok(GetSequencerRpcUrlResponse { sequencer_rpc_url })
+        Ok(GetTxOrdererRpcUrlResponse { tx_orderer_rpc_url })
     }
 }

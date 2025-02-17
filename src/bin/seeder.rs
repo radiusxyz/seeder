@@ -134,12 +134,11 @@ async fn initialize_external_rpc_server(context: &AppState) -> Result<JoinHandle
 
     // Initialize the seeder internal RPC server.
     let internal_rpc_server = RpcServer::new(context.clone())
-        .register_rpc_method::<external::DeregisterSequencer>()?
+        .register_rpc_method::<external::DeregisterTxOrderer>()?
         .register_rpc_method::<external::GetExecutorRpcUrlList>()?
-        .register_rpc_method::<external::GetSequencerRpcUrl>()?
-        .register_rpc_method::<external::GetSequencerRpcUrlList>()?
-        .register_rpc_method::<external::GetSequencerRpcUrlListAtBlockHeight>()?
-        .register_rpc_method::<external::RegisterSequencer>()?
+        .register_rpc_method::<external::GetTxOrdererRpcUrl>()?
+        .register_rpc_method::<external::GetTxOrdererRpcUrlList>()?
+        .register_rpc_method::<external::RegisterTxOrderer>()?
         .init(external_rpc_url.clone())
         .await?;
 

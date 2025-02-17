@@ -1,7 +1,7 @@
 mod config;
 mod rollup;
-mod sequencer;
 mod sequencing;
+mod tx_orderer;
 mod prelude {
     pub use radius_sdk::{
         kvstore::Model,
@@ -12,5 +12,5 @@ mod prelude {
 
 pub use config::*;
 pub use rollup::*;
-pub use sequencer::*;
 pub use sequencing::*;
+pub use tx_orderer::*;

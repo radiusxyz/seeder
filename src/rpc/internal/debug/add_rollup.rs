@@ -41,14 +41,14 @@ impl RpcParameter<AppState> for AddRollup {
                     .await
                     .map_err(|error| Error::LivenessClient(error.into()))?;
 
-                let sequencer_list = liveness_client
+                let tx_orderer_list = liveness_client
                     .publisher()
-                    .get_sequencer_list(&self.message.cluster_id, block_number)
+                    .get_tx_orderer_list(&self.message.cluster_id, block_number)
                     .await
                     .map_err(|error| Error::LivenessClient(error.into()))?;
 
-                // check if the sequencer is registered in the contract
-                sequencer_list
+                // check if the tx_orderer is registered in the contract
+                tx_orderer_list
                     .iter()
                     .find(|&address| self.message.address == address)
                     .ok_or(Error::NotRegisteredInContract)?;

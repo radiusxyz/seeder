@@ -2,13 +2,13 @@ use crate::types::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize, Model)]
 #[kvstore(key(address: &Address))]
-pub struct SequencerNodeInfo {
+pub struct TxOrdererNodeInfo {
     address: Address,
     external_rpc_url: String,
     cluster_rpc_url: String,
 }
 
-impl SequencerNodeInfo {
+impl TxOrdererNodeInfo {
     pub fn new(address: Address, external_rpc_url: String, cluster_rpc_url: String) -> Self {
         Self {
             address,
