@@ -1,8 +1,16 @@
 use crate::types::prelude::*;
 
+pub fn serialize_address<S>(address: &Address, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serializer.serialize_str(&address.as_hex_string())
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize, Model)]
 #[kvstore(key(address: &Address))]
 pub struct TxOrdererRpcInfo {
+    #[serde(serialize_with = "serialize_address")]
     tx_orderer_address: Address,
     external_rpc_url: String,
     cluster_rpc_url: String,

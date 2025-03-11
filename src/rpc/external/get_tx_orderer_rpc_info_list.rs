@@ -7,7 +7,7 @@ pub struct GetTxOrdererRpcInfoList {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetTxOrdererRpcInfoListResponse {
-    pub tx_orderer_rpc_info_list: Vec<ExecutorRpcInfo>,
+    pub tx_orderer_rpc_info_list: Vec<TxOrdererRpcInfo>,
 }
 
 impl RpcParameter<AppState> for GetTxOrdererRpcInfoList {
@@ -18,14 +18,14 @@ impl RpcParameter<AppState> for GetTxOrdererRpcInfoList {
     }
 
     async fn handler(self, _context: AppState) -> Result<Self::Response, RpcError> {
-        let tx_orderer_rpc_info_list: Vec<ExecutorRpcInfo> = self
+        let tx_orderer_rpc_info_list: Vec<TxOrdererRpcInfo> = self
             .tx_orderer_address_list
             .into_iter()
-            .filter_map(|tx_orderer_address| ExecutorRpcInfo::get(&tx_orderer_address).ok())
+            .filter_map(|tx_orderer_address| TxOrdererRpcInfo::get(&tx_orderer_address).ok())
             .collect();
 
         Ok(GetTxOrdererRpcInfoListResponse {
-            tx_orderer_rpc_info_list: tx_orderer_rpc_info_list,
+            tx_orderer_rpc_info_list,
         })
     }
 }

@@ -69,7 +69,7 @@ impl RpcParameter<AppState> for DeregisterTxOrderer {
             Platform::Local => return Err(Error::UnsupportedPlatform.into()),
         }
 
-        ExecutorRpcInfo::delete(&self.message.tx_orderer_address)?;
+        TxOrdererRpcInfo::delete(&self.message.tx_orderer_address)?;
 
         Ok(())
     }
