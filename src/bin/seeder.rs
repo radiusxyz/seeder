@@ -83,12 +83,12 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn initialize_clients(app_state: &AppState) -> Result<(), Error> {
-    let sequencing_info_list = SequencingInfoList::get_mut_or(SequencingInfoList::default)?;
+    let liveness_info_list = LivenessInfoList::get_mut_or(LivenessInfoList::default)?;
 
-    for (platform, service_provider) in sequencing_info_list.iter() {
-        let sequencing_info_payload = SequencingInfoPayload::get(*platform, *service_provider)?;
-        match sequencing_info_payload {
-            SequencingInfoPayload::Ethereum(liveness_info) => {
+    for (platform, service_provider) in liveness_info_list.iter() {
+        let liveness_info_payload = LivenessInfoPayload::get(*platform, *service_provider)?;
+        match liveness_info_payload {
+            LivenessInfoPayload::Ethereum(liveness_info) => {
                 liveness::radius::LivenessClient::initialize(
                     app_state.clone(),
                     *platform,
@@ -96,8 +96,8 @@ async fn initialize_clients(app_state: &AppState) -> Result<(), Error> {
                     liveness_info,
                 );
             }
-            SequencingInfoPayload::Local(_payload) => {
-                todo!("Implement 'LivenessClient' for local sequencing.");
+            LivenessInfoPayload::Local(_payload) => {
+                todo!("Implement 'LivenessClient' for local ordering.");
             }
         }
     }
@@ -110,10 +110,9 @@ async fn initialize_internal_rpc_server(context: &AppState) -> Result<(), Error>
 
     // Initialize the seeder internal RPC server.
     let internal_rpc_server = RpcServer::new(context.clone())
-        .register_rpc_method::<internal::debug::AddRollup>()?
-        .register_rpc_method::<internal::AddSequencingInfo>()?
-        .register_rpc_method::<internal::GetSequencingInfo>()?
-        .register_rpc_method::<internal::GetSequencingInfos>()?
+        .register_rpc_method::<internal::AddLivenessInfo>()?
+        .register_rpc_method::<internal::GetLivenessInfo>()?
+        .register_rpc_method::<internal::GetLivenessInfos>()?
         .init(internal_rpc_url.clone())
         .await?;
 
@@ -135,9 +134,9 @@ async fn initialize_external_rpc_server(context: &AppState) -> Result<JoinHandle
     // Initialize the seeder internal RPC server.
     let internal_rpc_server = RpcServer::new(context.clone())
         .register_rpc_method::<external::DeregisterTxOrderer>()?
-        .register_rpc_method::<external::GetExecutorRpcUrlList>()?
+        .register_rpc_method::<external::GetExecutorRpcInfoList>()?
         .register_rpc_method::<external::GetTxOrdererRpcUrl>()?
-        .register_rpc_method::<external::GetTxOrdererRpcUrlList>()?
+        .register_rpc_method::<external::GetTxOrdererRpcInfoList>()?
         .register_rpc_method::<external::RegisterTxOrderer>()?
         .init(external_rpc_url.clone())
         .await?;

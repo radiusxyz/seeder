@@ -2,18 +2,21 @@ use crate::types::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize, Model)]
 #[kvstore(key(address: &Address))]
-pub struct RollupNodeInfo {
-    address: Address,
+pub struct ExecutorRpcInfo {
+    executor_address: Address,
     rpc_url: String,
 }
 
-impl RollupNodeInfo {
-    pub fn new(address: Address, rpc_url: String) -> Self {
-        Self { address, rpc_url }
+impl ExecutorRpcInfo {
+    pub fn new(executor_address: Address, rpc_url: String) -> Self {
+        Self {
+            executor_address,
+            rpc_url,
+        }
     }
 
     pub fn address(&self) -> &Address {
-        &self.address
+        &self.executor_address
     }
 
     pub fn rpc_url(&self) -> &String {

@@ -11,7 +11,7 @@ struct RegisterTxOrdererMessage {
     platform: Platform,
     service_provider: ServiceProvider,
     cluster_id: String,
-    address: Address,
+    tx_orderer_address: Address,
     external_rpc_url: String,
     cluster_rpc_url: String,
 }
@@ -28,12 +28,12 @@ impl RpcParameter<AppState> for RegisterTxOrderer {
         // parameter.signature.verify_message(
         //     parameter.message.platform.into(),
         //     &parameter.message,
-        //     &parameter.message.address,
+        //     &parameter.message.tx_orderer_address,
         // )?;
 
         tracing::info!(
             "Register tx_orderer - address: {:?}",
-            self.message.address.as_hex_string()
+            self.message.tx_orderer_address.as_hex_string()
         );
 
         match self.message.platform {
@@ -41,6 +41,7 @@ impl RpcParameter<AppState> for RegisterTxOrderer {
                 let liveness_client: liveness::radius::LivenessClient = context
                     .get_liveness_client(self.message.platform, self.message.service_provider)
                     .await?;
+
                 let block_number = liveness_client
                     .publisher()
                     .get_block_number()
@@ -56,7 +57,7 @@ impl RpcParameter<AppState> for RegisterTxOrderer {
                 // check if the tx_orderer is registered in the contract
                 tx_orderer_list
                     .iter()
-                    .find(|&&address| self.message.address == address)
+                    .find(|&&address| self.message.tx_orderer_address == address)
                     .ok_or(Error::NotRegisteredInContract)?;
             }
             Platform::Local => return Err(Error::UnsupportedPlatform.into()),
@@ -65,13 +66,16 @@ impl RpcParameter<AppState> for RegisterTxOrderer {
         // health check
         health_check(&self.message.external_rpc_url).await?;
 
-        let tx_orderer_node_info = TxOrdererNodeInfo::new(
-            self.message.address,
+        let tx_orderer_node_info = TxOrdererRpcInfo::new(
+            self.message.tx_orderer_address,
             self.message.external_rpc_url,
             self.message.cluster_rpc_url,
         );
 
-        TxOrdererNodeInfo::put(&tx_orderer_node_info, tx_orderer_node_info.address())?;
+        TxOrdererRpcInfo::put(
+            &tx_orderer_node_info,
+            tx_orderer_node_info.tx_orderer_address(),
+        )?;
 
         Ok(())
     }

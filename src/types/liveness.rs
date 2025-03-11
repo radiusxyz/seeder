@@ -64,7 +64,7 @@ impl FromStr for ValidationServiceProvider {
 #[derive(Clone, Debug, Deserialize, Serialize, Model)]
 #[kvstore(key(platform: Platform, service_provider: ServiceProvider))]
 #[serde(untagged)]
-pub enum SequencingInfoPayload {
+pub enum LivenessInfoPayload {
     Ethereum(LivenessRadius),
     Local(LivenessLocal),
 }
@@ -81,9 +81,9 @@ pub struct LivenessLocal(serde_json::Value);
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize, Model)]
 #[kvstore(key())]
-pub struct SequencingInfoList(BTreeSet<(Platform, ServiceProvider)>);
+pub struct LivenessInfoList(BTreeSet<(Platform, ServiceProvider)>);
 
-impl SequencingInfoList {
+impl LivenessInfoList {
     pub fn insert(&mut self, platform: Platform, service_provider: ServiceProvider) {
         self.0.insert((platform, service_provider));
     }

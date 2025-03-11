@@ -1,6 +1,6 @@
 #!/bin/bash
 CURRENT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-PROJECT_ROOT_PATH="$( cd $SCRIPT_PATH/../.. >/dev/null 2>&1 ; pwd -P )"
+PROJECT_ROOT_PATH="$( cd $CURRENT_PATH/../.. >/dev/null 2>&1 ; pwd -P )"
 
 BIN_FILE_NAME="seeder"
 BIN_PATH="$PROJECT_ROOT_PATH/scripts/$BIN_FILE_NAME"
@@ -19,6 +19,9 @@ if [[ ! -f "$BIN_PATH" ]]; then
     echo "Please run this command 'cp $PROJECT_ROOT_PATH/target/release/$BIN_FILE_NAME $PROJECT_ROOT_PATH/scripts' after building the project"
     exit 1
 fi
+
+# Seeder private key
+SEEDER_PRIVATE_KEY="0x2141478fe814f58de31b5a6fb2a7682b7dae755cc19bab6acdbfa1fcfe6e64e1" # Please change this.
 
 SEEDER_EXTERNAL_RPC_URL="http://127.0.0.1:6000" # External IP - Please change this IP.
 SEEDER_INTERNAL_RPC_URL="http://127.0.0.1:6001" # Internal IP - Please change this IP.

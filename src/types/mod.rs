@@ -1,6 +1,6 @@
 mod config;
-mod rollup;
-mod sequencing;
+mod executor;
+mod liveness;
 mod tx_orderer;
 mod prelude {
     pub use radius_sdk::{
@@ -11,6 +11,6 @@ mod prelude {
 }
 
 pub use config::*;
-pub use rollup::*;
-pub use sequencing::*;
+pub use executor::*;
+pub use liveness::*;
 pub use tx_orderer::*;

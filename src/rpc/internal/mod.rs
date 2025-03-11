@@ -1,5 +1,5 @@
-pub mod add_sequencing_info;
+pub mod add_liveness_info;
 pub mod debug;
 
-pub use add_sequencing_info::*;
-pub use debug::{get_sequencing_info::*, get_sequencing_infos::*};
+pub use add_liveness_info::*;
+pub use debug::{get_liveness_info::*, get_liveness_infos::*};

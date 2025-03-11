@@ -8,8 +8,6 @@ pub enum Error {
     NotRegisteredInContract,
     NotDeregisteredFromContract,
     UnsupportedPlatform,
-    UnsupportedValidationServiceProvider,
-    UnsupportedRollupType,
     InvalidURL(reqwest::Error),
     HealthCheck(reqwest::Error),
 }
