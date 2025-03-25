@@ -5,7 +5,7 @@ pub struct GetLivenessInfos {}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetLivenessInfosResponse {
-    liveness_infos: Vec<((Platform, ServiceProvider), LivenessInfoPayload)>,
+    liveness_infos: Vec<((Platform, LivenessServiceProvider), LivenessInfoPayload)>,
 }
 
 impl RpcParameter<AppState> for GetLivenessInfos {
@@ -18,7 +18,7 @@ impl RpcParameter<AppState> for GetLivenessInfos {
     async fn handler(self, _context: AppState) -> Result<Self::Response, RpcError> {
         let liveness_info_list = LivenessInfoList::get()?;
 
-        let liveness_infos: Vec<((Platform, ServiceProvider), LivenessInfoPayload)> =
+        let liveness_infos: Vec<((Platform, LivenessServiceProvider), LivenessInfoPayload)> =
             liveness_info_list
                 .iter()
                 .filter_map(|(platform, service_provider)| {

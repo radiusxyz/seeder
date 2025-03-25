@@ -9,7 +9,7 @@ pub struct RegisterTxOrderer {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct RegisterTxOrdererMessage {
     platform: Platform,
-    service_provider: ServiceProvider,
+    liveness_service_provider: LivenessServiceProvider,
     cluster_id: String,
     tx_orderer_address: Address,
     external_rpc_url: String,
@@ -39,7 +39,10 @@ impl RpcParameter<AppState> for RegisterTxOrderer {
         match self.message.platform {
             Platform::Ethereum => {
                 let liveness_client: liveness::radius::LivenessClient = context
-                    .get_liveness_client(self.message.platform, self.message.service_provider)
+                    .get_liveness_client(
+                        self.message.platform,
+                        self.message.liveness_service_provider,
+                    )
                     .await?;
 
                 let block_number = liveness_client

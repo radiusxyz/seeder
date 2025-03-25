@@ -3,7 +3,7 @@ use crate::rpc::prelude::*;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AddLivenessInfo {
     pub platform: Platform,
-    pub service_provider: ServiceProvider,
+    pub liveness_service_provider: LivenessServiceProvider,
     pub payload: LivenessInfoPayload,
 }
 
@@ -18,23 +18,23 @@ impl RpcParameter<AppState> for AddLivenessInfo {
         tracing::info!(
             "Add liveness info - platform: {:?}, service provider: {:?}, payload: {:?}",
             self.platform,
-            self.service_provider,
+            self.liveness_service_provider,
             self.payload
         );
 
         // Save `LivenessClient` metadata.
         let mut liveness_info_list = LivenessInfoList::get_mut_or(LivenessInfoList::default)?;
-        liveness_info_list.insert(self.platform, self.service_provider);
+        liveness_info_list.insert(self.platform, self.liveness_service_provider);
         liveness_info_list.update()?;
 
-        LivenessInfoPayload::put(&self.payload, self.platform, self.service_provider)?;
+        LivenessInfoPayload::put(&self.payload, self.platform, self.liveness_service_provider)?;
 
         match &self.payload {
             LivenessInfoPayload::Ethereum(liveness_info) => {
                 liveness::radius::LivenessClient::initialize(
                     context.clone(),
                     self.platform,
-                    self.service_provider,
+                    self.liveness_service_provider,
                     liveness_info.clone(),
                 );
             }

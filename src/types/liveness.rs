@@ -38,7 +38,7 @@ impl FromStr for Platform {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize, Hash)]
 #[serde(rename_all = "snake_case")]
-pub enum ServiceProvider {
+pub enum LivenessServiceProvider {
     Radius,
 }
 
@@ -62,7 +62,7 @@ impl FromStr for ValidationServiceProvider {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Model)]
-#[kvstore(key(platform: Platform, service_provider: ServiceProvider))]
+#[kvstore(key(platform: Platform, liveness_service_provider: LivenessServiceProvider))]
 #[serde(untagged)]
 pub enum LivenessInfoPayload {
     Ethereum(LivenessRadius),
@@ -81,18 +81,26 @@ pub struct LivenessLocal(serde_json::Value);
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize, Model)]
 #[kvstore(key())]
-pub struct LivenessInfoList(BTreeSet<(Platform, ServiceProvider)>);
+pub struct LivenessInfoList(BTreeSet<(Platform, LivenessServiceProvider)>);
 
 impl LivenessInfoList {
-    pub fn insert(&mut self, platform: Platform, service_provider: ServiceProvider) {
-        self.0.insert((platform, service_provider));
+    pub fn insert(
+        &mut self,
+        platform: Platform,
+        liveness_service_provider: LivenessServiceProvider,
+    ) {
+        self.0.insert((platform, liveness_service_provider));
     }
 
-    pub fn remove(&mut self, platform: Platform, service_provider: ServiceProvider) {
-        self.0.remove(&(platform, service_provider));
+    pub fn remove(
+        &mut self,
+        platform: Platform,
+        liveness_service_provider: LivenessServiceProvider,
+    ) {
+        self.0.remove(&(platform, liveness_service_provider));
     }
 
-    pub fn iter(&self) -> Iter<'_, (Platform, ServiceProvider)> {
+    pub fn iter(&self) -> Iter<'_, (Platform, LivenessServiceProvider)> {
         self.0.iter()
     }
 }

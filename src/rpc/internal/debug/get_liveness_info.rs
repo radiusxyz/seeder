@@ -3,7 +3,7 @@ use crate::rpc::prelude::*;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetLivenessInfo {
     pub platform: Platform,
-    pub service_provider: ServiceProvider,
+    pub liveness_service_provider: LivenessServiceProvider,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -19,7 +19,8 @@ impl RpcParameter<AppState> for GetLivenessInfo {
     }
 
     async fn handler(self, _context: AppState) -> Result<Self::Response, RpcError> {
-        let liveness_info_payload = LivenessInfoPayload::get(self.platform, self.service_provider)?;
+        let liveness_info_payload =
+            LivenessInfoPayload::get(self.platform, self.liveness_service_provider)?;
 
         Ok(GetLivenessInfoResponse {
             liveness_info_payload,

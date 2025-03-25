@@ -11,7 +11,7 @@ curl --location $SEEDER_INTERNAL_RPC_URL \
   "method": "add_liveness_info",
   "params": {
     "platform": "'"$LIVENESS_PLATFORM"'",
-    "service_provider": "'"$LIVENESS_SERVICE_PROVIDER"'",
+    "liveness_service_provider": "'"$LIVENESS_SERVICE_PROVIDER"'",
     "payload": {
       "liveness_rpc_url": "'"$LIVENESS_RPC_URL"'",
       "liveness_websocket_url": "'"$LIVENESS_WS_URL"'",

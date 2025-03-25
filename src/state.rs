@@ -6,7 +6,7 @@ use radius_sdk::{
 };
 use serde::Serialize;
 
-use crate::types::{Config, Platform, ServiceProvider};
+use crate::types::{Config, LivenessServiceProvider, Platform};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -63,7 +63,7 @@ impl AppState {
     pub async fn add_liveness_client<T>(
         &self,
         platform: Platform,
-        service_provider: ServiceProvider,
+        liveness_service_provider: LivenessServiceProvider,
         liveness_client: T,
     ) -> Result<(), CachedKvStoreError>
     where
@@ -71,7 +71,7 @@ impl AppState {
     {
         self.put_to_store(
             &self.inner.liveness_clients,
-            (platform, service_provider),
+            (platform, liveness_service_provider),
             liveness_client,
         )
         .await
@@ -80,13 +80,16 @@ impl AppState {
     pub async fn get_liveness_client<T>(
         &self,
         platform: Platform,
-        service_provider: ServiceProvider,
+        liveness_service_provider: LivenessServiceProvider,
     ) -> Result<T, CachedKvStoreError>
     where
         T: Clone + Any + Send + 'static,
     {
-        self.get_from_store(&self.inner.liveness_clients, (platform, service_provider))
-            .await
+        self.get_from_store(
+            &self.inner.liveness_clients,
+            (platform, liveness_service_provider),
+        )
+        .await
     }
 
     /// Signer functions

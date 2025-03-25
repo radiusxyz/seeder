@@ -10,7 +10,7 @@ pub struct LivenessClient {
 
 struct LivenessClientInner {
     platform: Platform,
-    service_provider: ServiceProvider,
+    liveness_service_provider: LivenessServiceProvider,
     publisher: Publisher,
 }
 
@@ -27,8 +27,8 @@ impl LivenessClient {
         self.inner.platform
     }
 
-    pub fn service_provider(&self) -> ServiceProvider {
-        self.inner.service_provider
+    pub fn liveness_service_provider(&self) -> LivenessServiceProvider {
+        self.inner.liveness_service_provider
     }
 
     pub fn publisher(&self) -> &Publisher {
@@ -37,7 +37,7 @@ impl LivenessClient {
 
     pub fn new(
         platform: Platform,
-        service_provider: ServiceProvider,
+        liveness_service_provider: LivenessServiceProvider,
         liveness_info: LivenessRadius,
         signing_key: impl AsRef<str>,
     ) -> Result<Self, Error> {
@@ -50,7 +50,7 @@ impl LivenessClient {
 
         let inner = LivenessClientInner {
             platform,
-            service_provider,
+            liveness_service_provider,
             publisher,
         };
 
@@ -62,7 +62,7 @@ impl LivenessClient {
     pub fn initialize(
         context: AppState,
         platform: Platform,
-        service_provider: ServiceProvider,
+        liveness_service_provider: LivenessServiceProvider,
         liveness_info: LivenessRadius,
     ) {
         tokio::spawn({
@@ -74,18 +74,27 @@ impl LivenessClient {
                 let signer = PrivateKeySigner::from_str(platform.into(), signing_key).unwrap();
                 context.add_signer(platform, signer).await.unwrap();
 
-                let liveness_client =
-                    Self::new(platform, service_provider, liveness_info, signing_key).unwrap();
+                let liveness_client = Self::new(
+                    platform,
+                    liveness_service_provider,
+                    liveness_info,
+                    signing_key,
+                )
+                .unwrap();
 
                 context
-                    .add_liveness_client(platform, service_provider, liveness_client.clone())
+                    .add_liveness_client(
+                        platform,
+                        liveness_service_provider,
+                        liveness_client.clone(),
+                    )
                     .await
                     .unwrap();
 
                 tracing::info!(
                     "Initializing the liveness event listener for {:?}, {:?}..",
                     platform,
-                    service_provider
+                    liveness_service_provider
                 );
             }
         });

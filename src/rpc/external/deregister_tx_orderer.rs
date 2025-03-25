@@ -9,7 +9,7 @@ pub struct DeregisterTxOrderer {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct DeregisterTxOrdererMessage {
     platform: Platform,
-    service_provider: ServiceProvider,
+    liveness_service_provider: LivenessServiceProvider,
     cluster_id: String,
     tx_orderer_address: Address,
 }
@@ -37,7 +37,10 @@ impl RpcParameter<AppState> for DeregisterTxOrderer {
         match self.message.platform {
             Platform::Ethereum => {
                 let liveness_client: liveness::radius::LivenessClient = context
-                    .get_liveness_client(self.message.platform, self.message.service_provider)
+                    .get_liveness_client(
+                        self.message.platform,
+                        self.message.liveness_service_provider,
+                    )
                     .await?;
 
                 let block_margin = liveness_client
