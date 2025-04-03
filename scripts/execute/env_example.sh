@@ -7,6 +7,7 @@ BIN_PATH="$PROJECT_ROOT_PATH/scripts/$BIN_FILE_NAME"
 
 DATA_PATH=$PROJECT_ROOT_PATH/data
 CONFIG_FILE_PATH=$DATA_PATH/Config.toml
+PRIVATE_KEY_PATH=$DATA_PATH/signing_key
 
 # Copy the new version's binary to the scripts directory
 if [[ -f "$PROJECT_ROOT_PATH/target/release/$BIN_FILE_NAME" ]]; then
