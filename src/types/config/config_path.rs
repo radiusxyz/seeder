@@ -6,8 +6,11 @@ use std::{
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 
-use crate::types::{
-    config::ConfigError, ConfigOption, CONFIG_FILE_NAME, DEFAULT_SIGNING_KEY, SIGNING_KEY_PATH,
+use crate::{
+    types::{
+        config::ConfigError, ConfigOption, CONFIG_FILE_NAME, DEFAULT_SIGNING_KEY, SIGNING_KEY_PATH,
+    },
+    util::clear_dir,
 };
 
 #[derive(Debug, Deserialize, Parser, Serialize)]
@@ -45,7 +48,7 @@ impl ConfigPath {
     pub fn init(&self) -> Result<(), ConfigError> {
         // Remove the directory if it exists.
         if self.as_ref().exists() {
-            fs::remove_dir_all(self).map_err(ConfigError::RemoveConfigDirectory)?;
+            clear_dir(self).map_err(ConfigError::RemoveConfigDirectory)?;
         }
 
         // Create the directory
